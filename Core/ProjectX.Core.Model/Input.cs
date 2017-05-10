@@ -9,6 +9,8 @@ namespace ProjectX.Core.Model
     public class Input
     {
         public List<Parameter> ParameterList { get; set; }
+
+        public List<int> ResultList { get; set; }
     }
 
     public class Parameter
