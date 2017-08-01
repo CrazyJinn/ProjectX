@@ -2,11 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "python", "python", "{79A1D735-B8AB-4A98-8A69-E314138C666D}"
-	ProjectSection(SolutionItems) = preProject
-		C:\Users\jj84\Desktop\python\Spider\mySpider\test.py = C:\Users\jj84\Desktop\python\Spider\mySpider\test.py
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
