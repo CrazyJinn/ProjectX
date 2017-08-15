@@ -1,4 +1,5 @@
 # http://python.jobbole.com/81186/
+# http://bigsec.net/b52/scipydoc/wave_pyaudio.html#pymediamp3
 
 import subprocess
 import wave
