@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 rng = numpy.random
 
 # Parameters
-learning_rate = 0.01
+learning_rate = 0.05
 training_epochs = 5000
 display_step = 50
 # Training Data
@@ -18,8 +18,8 @@ X = tf.placeholder("float")
 Y = tf.placeholder("float")
 
 # Set model weights
-W = tf.Variable(0., name="weight")
-b = tf.Variable(0., name="bias")
+W = tf.Variable(10., name="weight")
+b = tf.Variable(-10., name="bias")
 # Construct a linear model
 pred = tf.add(tf.multiply(X, W), b)
 # Mean squared error
