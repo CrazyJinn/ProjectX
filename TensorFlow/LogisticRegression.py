@@ -6,7 +6,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 25
+training_epochs = 10 #训练循环的次数
 batch_size = 100
 display_step = 1
 
@@ -22,7 +22,7 @@ b = tf.Variable(tf.zeros([10]))
 pred = tf.nn.softmax(tf.matmul(x, W) + b) # Softmax
 
 # Minimize error using cross entropy
-cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(pred), reduction_indices=1))
+cost = tf.negative(tf.reduce_sum(y*tf.log(pred)))
 # Gradient Descent
 optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
@@ -54,4 +54,4 @@ with tf.Session() as sess:
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     # Calculate accuracy for 3000 examples
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print("Accuracy:", accuracy.eval({x: mnist.test.images[:3000], y: mnist.test.labels[:3000]}))
+    print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
