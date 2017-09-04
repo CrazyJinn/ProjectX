@@ -29,7 +29,7 @@ class GA():
         这里用一个bit表示一个基因
         """
         chromosome = 0
-        for i in xrange(length):
+        for i in range(length):
             chromosome |= (1 << i) * random.randint(0, 1)
         return chromosome
 
@@ -37,7 +37,7 @@ class GA():
         """
         获取初始种群（一个含有count个长度为length的染色体的列表）
         """
-        return [self.gen_chromosome(length) for i in xrange(count)]
+        return [self.gen_chromosome(length) for i in range(count)]
 
     def fitness(self, chromosome):
         """
@@ -82,7 +82,7 @@ class GA():
                 cross_pos = random.randint(0, self.length)
                 # 生成掩码，方便位操作
                 mask = 0
-                for i in xrange(cross_pos):
+                for i in range(cross_pos):
                     mask |= (1 << i)
                 male = parents[male]
                 female = parents[female]
@@ -97,7 +97,7 @@ class GA():
         变异
         对种群中的所有个体，随机改变某个个体中的某个基因
         """
-        for i in xrange(len(self.population)):
+        for i in range(len(self.population)):
             if random.random() < rate:
                 j = random.randint(0, self.length - 1)
                 self.population[i] ^= 1 << j
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     ga = GA(17, 300)
 
     # 200次进化迭代
-    for x in xrange(200):
+    for x in range(200):
         ga.evolve()
 
-    print ga.result()
+    print(ga.result())
