@@ -13,14 +13,16 @@ def bias_variable(shape):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
 
-
 def conv2d(x, W):
-    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME') #步长？
+    # return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='VALID')
 
 
 def max_pool_2x2(x):
+    # return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
+    #                       strides=[1, 2, 2, 1], padding='SAME')
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                          strides=[1, 2, 2, 1], padding='SAME')
+                          strides=[1, 2, 2, 1], padding='VALID')
 
 
 x = tf.placeholder(tf.float32, [None, 784])
@@ -37,9 +39,10 @@ b_conv2 = bias_variable([64])
 h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
-W_fc1 = weight_variable([7 * 7 * 64, 1024])
+# 如果padding使用SAME，则这里要使用7*7*64作为输出
+W_fc1 = weight_variable([4 * 4 * 64, 1024])
 b_fc1 = bias_variable([1024])
-h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 4 * 4 * 64])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
 keep_prob = tf.placeholder("float")
@@ -64,5 +67,6 @@ with tf.Session() as sess:
             train_accuracy = accuracy.eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
             print("step %d, training accuracy %g" % (i, train_accuracy))
         train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+    test_batch = mnist.test.next_batch(200)
     print("test accuracy %g" % accuracy.eval(
-        feed_dict={x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0}))
+        feed_dict={x: test_batch[0], y_: test_batch[1], keep_prob: 1.0}))
