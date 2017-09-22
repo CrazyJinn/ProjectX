@@ -1,3 +1,6 @@
+# 原文：https://iamtrask.github.io/2015/11/15/anyone-can-code-lstm/
+# 译文：http://blog.csdn.net/zzukun/article/details/49968129
+
 import copy
 import numpy as np
 np.random.seed(0)
@@ -34,8 +37,11 @@ output_dim = 1
 
 
 # initialize neural network weights
+# random生成一个2*16矩阵
 synapse_0 = 2 * np.random.random((input_dim, hidden_dim)) - 1
+# random生成一个16*1矩阵
 synapse_1 = 2 * np.random.random((hidden_dim, output_dim)) - 1
+# random生成一个16*16矩阵
 synapse_h = 2 * np.random.random((hidden_dim, hidden_dim)) - 1
 
 synapse_0_update = np.zeros_like(synapse_0)
@@ -123,6 +129,9 @@ for j in range(10000):
         print("Error:" + str(overallError))
         print("Pred:" + str(d))
         print("True:" + str(c))
+        print("synapse_0:" + str(synapse_0))
+        print("synapse_1:" + str(synapse_1))
+        print("synapse_h:" + str(synapse_h))
         out = 0
         for index, x in enumerate(reversed(d)):
             out += x * pow(2, index)
