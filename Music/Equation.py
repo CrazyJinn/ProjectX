@@ -1,27 +1,65 @@
 import numpy as np
+import MyEnum
+
 
 class Equation():
-    def GetResult(self, period, parameter):
-        """
-        period:周期，一般为π的2的n次方倍
-        parameter:方程的参数，tuple，(A,B,C,D,tFunction)
-        tFunction:trigonometric function，会根据值选择一个三角函数
-        
-        return: A*tFunction(Bx+C)+D
-        """
-        result = np.add(np.multiply(parameter[1], period), parameter[2])  # Bx+C
-        result = self.GetTFunction(result, parameter[4])
-        result = np.add(np.multiply(parameter[0], result), parameter[3])  # A*sin(Bx+C)+D
+    def __init__(self, equationList):
+        self.__equationList = equationList
+
+    def GetResult(self, x):
+        '''
+        将方程组逐个相加并除以方程个数
+        x:未知数
+        equationList:方程组
+        '''
+        result = 0
+        for equation in self.__equationList:
+            result += self.GetEquation(x, equation)
+        return result / len(self.__equationList)
+
+    def GetEquation(self, x, equation):
+        '''
+        根据equation返回一个方程
+        x:未知数
+        equation:方程,如[(2, 0), (1, 10), (0, -3)],返回10sin(x)-10
+        '''
+        result = x
+        for parameter in equation:
+            if isinstance(parameter[0], MyEnum.FunctionEnum):
+                result = self.GetFunctionByEuem(result, parameter[0], parameter[1])
+            elif isinstance(parameter[0], int):
+                result = self.GetFunctionByInt(result, parameter[0], parameter[1])
+            else:
+                raise Exception("Invalid parameter", 1)
         return result
 
-    def GetTFunction(self, x, tFunction):
-        """根据tFunction的值选择一个三角函数"""
-        if tFunction == 0:
+    def GetFunctionByEuem(self, x, function, coefficient):
+        '''
+
+        '''
+        if function == MyEnum.FunctionEnum.add:
+            return np.add(x, coefficient)
+        elif function == MyEnum.FunctionEnum.multiply:
+            return np.multiply(x, coefficient)
+        elif function == MyEnum.FunctionEnum.sin:
             return np.sin(x)
-        elif tFunction == 1:
+        elif function == MyEnum.FunctionEnum.cos:
             return np.cos(x)
-        elif tFunction == 2:
-            pass
-            # return np.tan(x) #这里有个问题，就是选择了tan之后出来的数值有可能太大，而且tan90°和会出现严重的问题，暂时不弄这玩意好了
         else:
+            pass
+
+    def GetFunctionByInt(self, x, function, coefficient):
+        '''
+
+        '''
+        if function == MyEnum.FunctionEnum.add.value:
+            return np.add(x, coefficient)
+        elif function == MyEnum.FunctionEnum.multiply.value:
+            return np.multiply(x, coefficient)
+        elif function == MyEnum.FunctionEnum.sin.value:
             return np.sin(x)
+        elif function == MyEnum.FunctionEnum.cos.value:
+            return np.cos(x)
+        else:
+            pass
+
