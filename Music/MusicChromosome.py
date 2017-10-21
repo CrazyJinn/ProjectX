@@ -2,29 +2,31 @@ import numpy as np
 import MyEnum
 
 
-class Equation():
-    def __init__(self, equationList):
-        self.__equationList = equationList
+class MusicChromosome():
+    def __init__(self, chromosome):
+        self.__chromosome = chromosome
 
-    def GetResult(self, x):
+    def GetChromosomeLen(self):
+        return len(self.__chromosome)
+
+    def GetChromosomeResult(self, x):
         '''
-        将方程组逐个相加并除以方程个数
-        x:未知数
-        equationList:方程组
+        返回染色体所表达的的值
+        x: 未知数
         '''
         result = 0
-        for equation in self.__equationList:
-            result += self.GetEquation(x, equation)
-        return result / len(self.__equationList)
+        for gene in self.__chromosome:
+            result += self.GetGeneResult(x, gene)
+        return result
 
-    def GetEquation(self, x, equation):
+    def GetGeneResult(self, x, gene):
         '''
-        根据equation返回一个方程
-        x:未知数
-        equation:方程,如[(2, 0), (1, 10), (0, -3)],返回10sin(x)-10
+        返回基因所表达的方程的值
+        x: 未知数
+        gene: 基因,如[(2, 0), (1, 10), (0, -3)],返回10sin(x)-10
         '''
         result = x
-        for parameter in equation:
+        for parameter in gene:
             if isinstance(parameter[0], MyEnum.FunctionEnum):
                 result = self.GetFunctionByEuem(result, parameter[0], parameter[1])
             elif isinstance(parameter[0], int):
@@ -62,4 +64,3 @@ class Equation():
             return np.cos(x)
         else:
             pass
-

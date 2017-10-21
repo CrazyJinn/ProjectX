@@ -4,5 +4,5 @@ from enum import Enum, unique
 class FunctionEnum(Enum):
     add = 0
     multiply = 1
-    sin = 2
-    cos = 3
+    sin = 8
+    cos = 9

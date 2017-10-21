@@ -1,24 +1,38 @@
-
+import GA
 import numpy as np
-import Equation
-import random
+import MusicChromosome as mc
 import MyEnum
 
-def GetRandomTFunctionEquation():
-    '''
-    获取一个随机的三角函数方程
-    '''
-    pass
+
+def Judge(haha):
+    result = []
+    for i in haha:
+        if(round(i) > 0):
+            result.append(1)
+        elif (round(i) < 0):
+            result.append(-1)
+        else:
+            result.append(0)
+    return result
 
 
-equation1 = [(2, 0), (1, 10), (0, -3)]
-equation2 = [(3, 0), (1, 3), (0, -1)]
-equationList = [equation1, equation2]
+gene1 = [(2, 0), (1, 10), (0, -3)]
+gene2 = [(3, 0), (1, 3), (0, -1)]
+Chromosome = GA.GA().GetRandomChromosome()
 
-a = Equation.Equation(equationList)
+a = mc.MusicChromosome(Chromosome)
 
+resultList = []
 for i in range(10):
     period = i * np.pi / 2
+    resultList.append(a.GetChromosomeResult(period) / a.GetChromosomeLen())
 
-    result = a.GetResult(period)
-    print(result)
+print(resultList)
+
+for i in Judge(resultList):
+    if(i == 1):
+        print('↑', end='')
+    elif (i == -1):
+        print('↓', end='')
+    else:
+        print('->', end='')
