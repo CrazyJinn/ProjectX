@@ -8,8 +8,8 @@ learning_rate = 0.05
 training_epochs = 2000
 display_step = 50
 # Training Data
-train_X = numpy.asarray([2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0])
-train_Y = numpy.asarray([1.0, 2.3, 2.9, 4.0, 4.5, 6.5, 7.1, 8.2, 8.8, 10.0])
+train_X = numpy.asarray([3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0])
+train_Y = numpy.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
 paint_X = numpy.asarray([-100.0, 100.0])
 
 n_samples = train_X.shape[0]
@@ -47,7 +47,7 @@ with tf.Session() as sess:
             print("Epoch:", '%04d' % (epoch + 1), "cost=", "{:.9f}".format(c),
                   "W=", sess.run(W), "b=", sess.run(b))
 
-            plt.axis([0.0, 12.01, 0.0, 11.01])
+            plt.axis([0.0, 13.01, 0.0, 11.01])
             plt.plot(train_X, train_Y, 'ro', label='Original data')
             plt.plot(paint_X, sess.run(W) * paint_X + sess.run(b), label='Fitted line')
             plt.pause(0.001)
@@ -57,7 +57,7 @@ with tf.Session() as sess:
     training_cost = sess.run(cost, feed_dict={X: train_X, Y: train_Y})
     print("Training cost=", training_cost, "W=", sess.run(W), "b=", sess.run(b), '\n')
 
-    plt.axis([0.0, 12.01, 0.0, 11.01])
+    plt.axis([0.0, 13.01, 0.0, 11.01])
     plt.plot(train_X, train_Y, 'ro', label='Original data')
     plt.plot(paint_X, sess.run(W) * paint_X + sess.run(b), label='Fitted line')
     plt.pause(10)
