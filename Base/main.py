@@ -7,7 +7,7 @@ train_Y = np.asarray([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
 plt.figure()
 plt.ion()
-plt.axis([0.0, 13.01, 0.0, 1.01])
+plt.axis([0.0, 11.0, -0.2, 1.2])
 
 # lista = []
 # for i in range(150):
