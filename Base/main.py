@@ -2,32 +2,55 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-train_X = np.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
-train_Y = np.asarray([0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+x = [4, 4, 4, 2, 2, 6, 2, 4, 4,
+     12, 2, 2, 6, 2, 4, 4,
+     12, 4, 6, 2, 4, 4,
+     8, 2, 2, 2, 2, 6, 2, 4, 4,
+     8, 4, 2, 2, 6, 2, 4, 4,
+     12, 2, 2, 6, 2, 4, 4,
+     12, 2, 2, 4, 2, 4, 6,
+     2, 2, 2, 10, 2, 2, 2, 2, 4, 4,
+     12, 2, 2, 6, 2, 4, 4,
+     12, 2, 2, 6, 2, 4, 4,
+     16, 2, 2, 4, 4, 2, 2,
+     6, 2, 8, 4, 4, 4, 4,
+     12, 4, 8, 4, 4,
+     2, 2, 8, 2, 2, 4, 2, 2, 4, 4,
+     12, 4, 8, 8,
+     2, 2, 8, 2, 2, 4, 2, 6, 4,
+     12, 4]
 
-plt.figure()
-plt.ion()
-plt.axis([0.0, 11.0, -0.2, 1.2])
+y = [0, 0, 0, 6, 7, 8, 7, 8, 10,
+     7, 3, 3, 6, 5, 6, 8,
+     5, 3, 4, 3, 4, 8,
+     3, 0, 8, 8, 8, 7, 4, 4, 7,
+     7, 0, 6, 7, 8, 7, 8, 10,
+     7, 3, 3, 6, 5, 6, 8,
+     5, 2, 3, 4, 8, 7, 8,
+     9, 9, 10, 8, 8, 7, 6, 6, 7, 5,
+     6, 8, 9, 10, 9, 10, 12,
+     9, 5, 5, 8, 7, 8, 10,
+     10, 6, 7, 8, 7, 9, 9,
+     8, 5, 5, 11, 10, 9, 8,
+     10, 10, 13, 12, 12,
+     10, 9, 8, 0, 8, 9, 8, 9, 9, 12,
+     10, 10, 13, 12,
+     10, 9, 8, 0, 8, 9, 8, 9, 7,
+     6, 0]
 
-# lista = []
-# for i in range(150):
-#     lista.append(i / 10)
-# train_X = np.asarray(lista)
+x_convert = []
+x_count = -4
+
+
+for temp in x:
+    x_count += temp
+    x_convert.append(x_count)
+
+
+plt.axis([0.0, 530, -1, 16])
 
 plt.xlabel("x")
 plt.ylabel("y")
-plt.plot(train_X, train_Y, 'ro', label='Original data')
-# plt.plot(train_X, (train_X - 6) * (train_X - 6) + 1, label='Fitted line')
-plt.pause(10)
-
-
-# plt.figure()
-# plt.ion()
-# plt.axis([0.0, 13.01, 0.0, 11.01])
-
-# train_X = numpy.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
-# train_Y = numpy.asarray([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
-# paint_X = numpy.asarray([-100.0, 100.0])
-# plt.plot(train_X, train_Y, 'ro', label='Original data')
-# plt.plot(paint_X, paint_X/2 , label='Fitted line')
-# plt.pause(10)
+plt.plot(x_convert, y, 'ro', label='Fitted line')
+plt.plot(x_convert, y, label='Fitted line')
+plt.pause(100)
