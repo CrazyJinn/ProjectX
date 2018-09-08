@@ -16,16 +16,17 @@ def Judge(haha):
     return result
 
 
-gene1 = [(2, 0), (1, 10), (0, -3)]
-gene2 = [(3, 0), (1, 3), (0, -1)]
-Chromosome = GA.GA().GetRandomChromosome()
+# gene1 = [(2,0,10,7), (10,10,-8,-7), (2,-3,2,3)]
+gene1 = [(1, 1, 0, 1, 0),(-1, 1, 0, 1, 0),(2, 1, 0, 1, 0)]
 
-a = mc.MusicChromosome(Chromosome)
+# Chromosome = GA.GA().GetRandomChromosome()
+
+a = mc.MusicChromosome()
 
 resultList = []
 for i in range(10):
     period = i * np.pi / 2
-    resultList.append(a.GetChromosomeResult(period) / a.GetChromosomeLen())
+    resultList.append(a.GetGeneListResult(gene1, period))
 
 print(resultList)
 

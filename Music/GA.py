@@ -12,13 +12,13 @@ class GA():
     def GetRandomGene(self):
         '''
         返回随机基因
-        现在只返回型如 Asin(Bx+C)-D or Acos(Bx+C)-D 的基因
+        现在只返回型如 Acos(Bπ+C)^D-E 的基因
         '''
-        return [(1, np.random.randint(0, 10)),  # Bx
-                (0, np.random.randint(-7, 8)),  # Bx+c,在正负2pi之间取值
-                (np.random.randint(8, 10), 0),  # sin or cos
-                (1, np.random.randint(0, 10)),
-                (0, np.random.randint(-9, 10))]
+        return (np.random.randint(-10, 10),
+                np.random.randint(-10, 10),
+                np.random.randint(-10, 10),
+                np.random.randint(-10, 10),
+                np.random.randint(-10, 10))
 
     def GetRandomChromosome(self):
         '''
