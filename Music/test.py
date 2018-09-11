@@ -1,5 +1,6 @@
-import Chromosome
+
 import ChromosomeHelper
+chromosomeHelper = ChromosomeHelper.ChromosomeHelper()
 import GA
 import numpy as np
 
@@ -18,17 +19,16 @@ def Judge(haha):
 
 # chromosome = [(2, 5, 1, -10, 3, -7)]
 
-chromosome1 = Chromosome.Chromosome().GetChromosome()
-chromosome2 = Chromosome.Chromosome().GetChromosome()
-chromosomeHelper = ChromosomeHelper.ChromosomeHelper()
+chromosome1 = chromosomeHelper.GenerateChromosome()
+chromosome2 = chromosomeHelper.GenerateChromosome()
 ga = GA.GA()
 
 print(chromosome1)
 print(chromosome2)
 
-# for i in range(10):
-#     period = i * np.pi / 2
-#     print(chromosomeHelper.GetChromosomeResult(chromosome1,period))
+for i in range(10):
+    period = i * np.pi / 2
+    print(chromosomeHelper.GetChromosomeResult(chromosome1, period))
 
 print(ga.Crossover(chromosome1, chromosome2))
 # print(ga.Mutation(chromosome1))
