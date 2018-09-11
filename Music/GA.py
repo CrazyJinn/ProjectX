@@ -1,37 +1,30 @@
+
 import random
 import numpy as np
-import MusicChromosome as mc
 
-np.random.seed(0)
+import Chromosome
 
 
 class GA():
-    def __init__(self):
-        self.__initChromosomeLen = 1
 
-    def GetRandomGene(self):
+    def Crossover(self, chromosomeA, chromosomeB):
         '''
-        返回随机基因
-        现在只返回型如 a*cos(b*π+d)^e-f 的基因
+        繁殖，要求染色体长度相等
+        现在是均匀的交换基因，之后应该需要改成随机交换基因
         '''
-        return (np.random.randint(-10, 10),
-                # 这里10^N限定得比较小，我觉得应该把N限定得更倾向于0，N取值正负2的时候基本就算出来是一个常数了
-                np.random.randint(-10, 10) * np.power(10.0, np.random.randint(-2, 2)),
-                np.random.randint(-10, 10),
-                # e是否需要只能为正数，若为负数，会导致cos的值过小或者等于0的时候，取值接近无穷
-                np.random.randint(0, 10),
-                np.random.randint(-10, 10))
+        result = []
+        length = len(chromosomeA)
+        for i in range(length):
+            if(i % 2 == 0):
+                result.append(chromosomeA[i])
+            else:
+                result.append(chromosomeB[i])
+        return result
 
-    def GetRandomChromosome(self):
+    def Mutation(self, chromosome):
         '''
-        返回随机染色体
+        变异，现在是整个基因变异，也可以只改变基因中的某个值
         '''
-        chromosome = []
-        for i in range(self.__initChromosomeLen):
-            chromosome.append(self.GetRandomGene())
+        index = np.random.randint(0, len(chromosome))
+        chromosome[index] = Chromosome.Chromosome().GenerateGene()
         return chromosome
-
-    def Crossover(self):
-        '''
-        '''
-        pass

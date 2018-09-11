@@ -1,7 +1,7 @@
+import Chromosome
+import ChromosomeHelper
 import GA
 import numpy as np
-import MusicChromosome as mc
-import MyEnum
 
 
 def Judge(haha):
@@ -16,21 +16,23 @@ def Judge(haha):
     return result
 
 
-# gene1 = [(10, 10, 10, 10, 10)]
+# chromosome = [(2, 5, 1, -10, 3, -7)]
 
-chromosome = GA.GA().GetRandomChromosome()
+chromosome1 = Chromosome.Chromosome().GetChromosome()
+chromosome2 = Chromosome.Chromosome().GetChromosome()
+chromosomeHelper = ChromosomeHelper.ChromosomeHelper()
+ga = GA.GA()
 
-a = mc.MusicChromosome()
+print(chromosome1)
+print(chromosome2)
 
+# for i in range(10):
+#     period = i * np.pi / 2
+#     print(chromosomeHelper.GetChromosomeResult(chromosome1,period))
 
+print(ga.Crossover(chromosome1, chromosome2))
+# print(ga.Mutation(chromosome1))
 
-resultList = []
-for i in range(10):
-    period = i * np.pi / 2
-    resultList.append(a.GetGeneListResult(chromosome, period))
-
-print(chromosome)
-print(resultList)
 
 # for i in Judge(resultList):
 #     if(i == 1):
