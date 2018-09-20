@@ -29,9 +29,8 @@ def Mutation(chromosome):
     return chromosome
 
 
-def asd(chromosome):
+def Append(chromosome):
     '''
-    todo:改名
     染色体增加长度
     '''
     chromosome.append(ch.GenerateGene())
