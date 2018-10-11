@@ -35,3 +35,18 @@ def Append(chromosome):
     '''
     chromosome.append(ch.GenerateGene())
     return chromosome
+
+
+def Fitness(chromosome, samplingList):
+    '''
+    计算适应度
+    '''
+    result = 0.0
+    for sampling in samplingList:
+        result = result + GetAbsFromNearestInt(ch.GetChromosomeResult(chromosome, sampling))
+    return result
+
+
+def GetAbsFromNearestInt(number):
+    temp = round(number)
+    return np.abs(number - temp)

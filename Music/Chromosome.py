@@ -26,13 +26,16 @@ def GenerateChromosome():
     return chromosome
 
 
-def GetGeneResult(gene, period):
+def GetGeneResult(gene, sampling):
     '''
     计算 a*cos(b*10^c*π+d)^e-f
     '''
     result = 0
-    result = np.multiply(np.multiply(
-        gene[1], period), np.power(10, gene[2]))  # b*10^c*π
+    result = np.multiply(gene[1], sampling)  # b*π
+    if gene[2] >= 0:
+        result = np.multiply(result, np.power(10, gene[2]))  # b*10^c*π
+    else:
+        result = np.multiply(result, 1 / np.power(10, np.abs(gene[2])))  # b*10^c*π
     result = np.add(result, gene[3])  # b*10^c*π+d
     result = np.cos(result)  # cos(b*10^c*π+d)
     result = np.power(result, gene[4])  # cos(b*10^c*π+d)^e
@@ -41,12 +44,12 @@ def GetGeneResult(gene, period):
     return result
 
 
-def GetChromosomeResult(chromosome, period):
+def GetChromosomeResult(chromosome, sampling):
     '''
     返回染色体所表达的方程的值
     x: 未知数
     '''
     result = 0
     for gene in chromosome:
-        result += GetGeneResult(gene, period)
+        result += GetGeneResult(gene, sampling)
     return result
