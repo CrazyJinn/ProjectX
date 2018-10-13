@@ -36,6 +36,8 @@ def Append(chromosome):
     chromosome.append(ch.GenerateGene())
     return chromosome
 
+# 这里是计算music适应度的
+
 
 def Fitness(chromosome, samplingList):
     '''
@@ -50,3 +52,31 @@ def Fitness(chromosome, samplingList):
 def GetAbsFromNearestInt(number):
     temp = round(number)
     return np.abs(number - temp)
+# 这里是计算music适应度的 end
+
+# 这里是计算直线适应度的
+
+
+def FitnessForStraLine(chromosome, samplingList):
+    '''
+    计算直线适应度
+    '''
+    result = 0.0
+    for sampling in samplingList:
+        result = result + GetResultForStraLine(sampling,
+                                               ch.GetChromosomeResult(chromosome, sampling))
+    return result
+
+
+def GetResultForStraLine(result1, result2):
+    return np.power(result1 - result2, 2)
+# 这里是计算直线适应度的 end
+
+
+def Evolve(population):
+    # population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
+    # parents = population[:10]  # todo
+    # result = []
+    # Crossover()
+    pass
+
