@@ -7,37 +7,33 @@ population = []
 for i in range(30):
     population.append([ch.GenerateChromosome(), 0.0])
 
-samplingList = []
-for i in range(10):
-    samplingList.append(i)
+xSamplingList = []
+ySamplingList = []
+for i in range(120):
+    xSamplingList.append(i / 10)
+    ySamplingList.append(120 - (i * i / 100))
 
-for temp in population:
-    temp[1] = ga.FitnessForStraLine(temp[0], samplingList)
 
-population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
-
-for temp in population:
-    print(temp[1])
+for i in range(5000):
+    for temp in population:
+        if(i % 50 == 0):
+            temp[0] = ga.Append(temp[0])
+        temp[1] = ga.FitnessForLine(temp[0], xSamplingList, ySamplingList)
+    population = ga.Evolve(population)
+    print(i)
 
 bestChromosome = population[0]
 
-# print('---------------------------------')
-
-# for temp in population:
-#     ga.Mutation(temp[0])
-
-# for temp in population:
-#     temp[1] = ga.FitnessForStraLine(temp[0], samplingList)
-
-# population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
-
-# for temp in population:
-#     print(temp[1])
+print('+++++++++++++++++')
+print(population[0][0])
+print(ga.FitnessForLine(bestChromosome[0], xSamplingList, ySamplingList))
+print('+++++++++++++++++')
 
 import matplotlib.pyplot as plt
 plt.figure()
 plt.ion()
-plt.axis([-5.0, 10.0, -5.0, 10.0])
-plt.plot(samplingList, samplingList, 'ro', label='Original data')
-plt.plot(samplingList, ch.GetChromosomeResult(bestChromosome[0], samplingList), label='Fitted line')
+plt.axis([-2.0, 12.0, -2.0, 150.0])
+plt.plot(xSamplingList, ySamplingList,  label='Original data', color='red')
+plt.plot(xSamplingList, ch.GetChromosomeResult(
+    bestChromosome[0], xSamplingList),  label='Fitted line', color='blue')
 plt.pause(20)
