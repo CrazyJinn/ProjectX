@@ -6,18 +6,50 @@ import Chromosome as ch
 
 np.random.seed(const.randomSeed)
 
+
+# def Crossover(chromosomeA, chromosomeB):
+#     '''
+#     繁殖，要求染色体长度相等
+#     现在是均匀的交换基因，之后应该需要改成随机交换基因
+#     '''
+#     result = []
+#     length = len(chromosomeA)
+#     for i in range(length):
+#         if(i % 2 == 0):
+#             result.append(chromosomeA[i])
+#         else:
+#             result.append(chromosomeB[i])
+#     return result
+
+# def Crossover(chromosomeA, chromosomeB):
+#     '''
+#     繁殖，要求染色体长度相等
+#     此繁殖方法是随机选择一个交叉点，交叉点前使用A，交叉点后使用B
+#     '''
+#     result = []
+#     length = len(chromosomeA)
+
+#     crossPos = np.random.randint(0, length)
+#     result.extend(chromosomeA[0:crossPos])
+#     result.extend(chromosomeB[crossPos:length])
+#     return result
+
 def Crossover(chromosomeA, chromosomeB):
     '''
     繁殖，要求染色体长度相等
-    现在是均匀的交换基因，之后应该需要改成随机交换基因
     '''
     result = []
     length = len(chromosomeA)
-    for i in range(length):
-        if(i % 2 == 0):
-            result.append(chromosomeA[i])
-        else:
-            result.append(chromosomeB[i])
+
+    chromosome = []
+    chromosome.extend(chromosomeA)
+    chromosome.extend(chromosomeB)
+
+    randomNum = np.random.choice(length * 2, length, replace=False)
+
+    for i in randomNum:
+        result.append(chromosome[i])
+
     return result
 
 
@@ -71,18 +103,31 @@ def GetResultForLine(result1, result2):
 # 这里是计算线适应度的 end
 
 
-# todo 这里的数字都要改
 def Evolve(population):
     population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
-    result = []
-    for temp in population[:10]:
-        result.append([temp[0], 0.0])
-    for i in range(20):
-        a = np.random.randint(0, 10)
-        b = np.random.randint(0, 10)
-        result.append([Crossover(result[a][0], result[b][0]), 0.0])
 
-    c = np.random.randint(0, 30)
-    result[c][0] = Mutation(result[c][0])
+    result = []
+
+    parentCount = (int)(len(population) / 3)
+    childCount = parentCount * 2
+
+    for temp in population[:parentCount]:
+        result.append([temp[0], 0.0])
+
+    # for temp in population[:parentCount]:
+    #     print(temp[0])
+    #     print("fit:", temp[1])
+
+    # result.append(population[np.random.randint(0, 3) + 7])
+    # result.append(population[np.random.randint(0, 10) + 10])
+    # result.append(population[np.random.randint(0, 10) + 20])
+
+    for i in range(childCount):
+        choiceA, choiceB = np.random.choice(parentCount, 2, replace=False)
+        result.append([Crossover(result[choiceA][0], result[choiceB][0]), 0.0])
+
+    for temp in result:
+        if random.random() < 0.05:
+            temp[0] = Mutation(temp[0])
 
     return result

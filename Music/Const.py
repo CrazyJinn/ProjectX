@@ -8,4 +8,4 @@ domain = [(-9, 10),
 
 initChromosomeLen = 4
 
-randomSeed = 0
+randomSeed = 2
