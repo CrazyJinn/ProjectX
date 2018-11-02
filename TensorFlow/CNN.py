@@ -1,6 +1,8 @@
 import tensorflow as tf
 
 from tensorflow.examples.tutorials.mnist import input_data
+import matplotlib.pyplot as plt
+import numpy as np
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 
@@ -12,6 +14,7 @@ def weight_variable(shape):
 def bias_variable(shape):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
+
 
 def conv2d(x, W):
     # return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
@@ -59,14 +62,24 @@ correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 init = tf.global_variables_initializer()
 
+
+def gen_image(arr):
+    image = np.array(arr, dtype='float').reshape((28, 28))
+    plt.imshow(image,  cmap='gray')
+    return plt
+
+
+batch_xs, batch_ys = mnist.test.next_batch(2)
+
 with tf.Session() as sess:
     sess.run(init)
-    for i in range(2000):
+    for i in range(200):
         batch = mnist.train.next_batch(50)
         if i % 100 == 0:
             train_accuracy = accuracy.eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
             print("step %d, training accuracy %g" % (i, train_accuracy))
         train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    test_batch = mnist.test.next_batch(200)
-    print("test accuracy %g" % accuracy.eval(
-        feed_dict={x: test_batch[0], y_: test_batch[1], keep_prob: 1.0}))
+    test_batch = mnist.test.next_batch(3)
+    for temp in test_batch:
+        print("", y_conv.eval(feed_dict={x: temp[0], y_: temp[1], keep_prob: 1.0}))
+        gen_image(temp).show()
