@@ -68,18 +68,26 @@ def gen_image(arr):
     plt.imshow(image,  cmap='gray')
     return plt
 
+# with tf.Session() as sess:
+#     sess.run(init)
+#     for i in range(2000):
+#         batch = mnist.train.next_batch(50)
+#         if i % 100 == 0:
+#             train_accuracy = accuracy.eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
+#             print("step %d, training accuracy %g" % (i, train_accuracy))
+#         train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
 
-batch_xs, batch_ys = mnist.test.next_batch(2)
+#     saver = tf.train.Saver()
+#     model_path = "C:/Users/jj84/Desktop/result/MNIST.ckpt"
+#     save_path = saver.save(sess, model_path)
+
 
 with tf.Session() as sess:
-    sess.run(init)
-    for i in range(200):
-        batch = mnist.train.next_batch(50)
-        if i % 100 == 0:
-            train_accuracy = accuracy.eval(feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-            print("step %d, training accuracy %g" % (i, train_accuracy))
-        train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    test_batch = mnist.test.next_batch(3)
-    for temp in test_batch:
-        print("", y_conv.eval(feed_dict={x: temp[0], y_: temp[1], keep_prob: 1.0}))
+    saver = tf.train.Saver()
+    saver.restore(sess, "C:/Users/jj84/Desktop/result/MNIST.ckpt")
+    test_batch = mnist.test.next_batch(5)
+    result = sess.run(tf.argmax(y_conv.eval(
+        feed_dict={x: test_batch[0], y_: test_batch[1], keep_prob: 1.0}), 1))
+    print("aaa:", result)
+    for temp in test_batch[0]:
         gen_image(temp).show()
