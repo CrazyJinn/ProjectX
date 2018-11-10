@@ -154,7 +154,7 @@ for it in range(20000):
             imgPX[imgPX < 0] = 0
             ChromosomeResult.append(imgPX)
 
-        discriminatorResult = D_real.eval(feed_dict={X: ChromosomeResult, X_: ChromosomeResult})
+        discriminatorResult = sess.run(D_real, feed_dict={X: ChromosomeResult, X_: ChromosomeResult})
         for temp in discriminatorResult:
             fitList.append(temp)
 
