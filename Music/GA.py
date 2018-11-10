@@ -104,7 +104,10 @@ def GetResultForLine(result1, result2):
 
 
 def Evolve(population):
-    population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
+    population = [x for x in sorted(population, key=lambda o: o[1], reverse=True)]
+
+    for fit in population[:3]:
+        print("fit:", fit[1])
 
     result = []
 

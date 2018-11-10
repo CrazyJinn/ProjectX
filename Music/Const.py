@@ -6,6 +6,6 @@ domain = [(-9, 10),
           (0, 10),  # e是否需要只能为正数，若为负数，会导致cos的值过小或者等于0的时候，取值接近无穷
           (-9, 10)]
 
-initChromosomeLen = 4
+initChromosomeLen = 15
 
-randomSeed = 2
+randomSeed = 7
