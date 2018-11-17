@@ -32,7 +32,7 @@ theta_D = [D_W1, D_W2, D_b1, D_b2]
 
 samplingList = []
 for i in range(784):
-    samplingList.append(i)
+    samplingList.append(i / 10)
 
 X_ = tf.placeholder(tf.float32, shape=[None, 784])
 
@@ -40,7 +40,7 @@ X_ = tf.placeholder(tf.float32, shape=[None, 784])
 
 
 def generator(chromosome):
-    return ch.GetChromosomeResult(chromosome, samplingList) / 10
+    return ch.GetChromosomeResult(chromosome, samplingList) / 50
 
 
 population = []
@@ -113,7 +113,7 @@ D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
 mb_size = 128
 
 # 读取数据集MNIST，并放在当前目录data文件夹下MNIST文件夹中，如果该地址没有数据，则下载数据至该文件夹
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
 
 # 打开一个会话运行计算图
 sess = tf.Session()
@@ -129,22 +129,16 @@ if not os.path.exists('out/'):
 i = 0
 for it in range(20000):
 
-    # 每2000次输出一张生成器生成的图片
-    # if it % 2000 == 0:
-        # samples = sess.run(G_sample)
-
-        # fig = plot(samples)
-        # plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
-        # i += 1
-        # plt.close(fig)
-
     # next_batch抽取下一个批量的图片，该方法返回一个矩阵，即shape=[mb_size，784]，每一行是一张图片，共批量大小行
-    X_mb, _ = mnist.train.next_batch(mb_size)
+    X_mb = []
+    batchX, batchY = mnist.train.next_batch(mb_size)
+    for j in range(mb_size):
+        if batchY[j] == 3:
+            X_mb.append(batchX[j])
 
-    # 投入数据并根据优化方法迭代一次，计算损失后返回损失值
-    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, X_: X_mb})
+    bestChromosomeResult = []
 
-    for i in range(50):
+    for j in range(30):
         ChromosomeResult = []
         fitList = []
 
@@ -154,7 +148,8 @@ for it in range(20000):
             imgPX[imgPX < 0] = 0
             ChromosomeResult.append(imgPX)
 
-        discriminatorResult = sess.run(D_real, feed_dict={X: ChromosomeResult, X_: ChromosomeResult})
+        discriminatorResult = sess.run(
+            D_fake, feed_dict={X_: ChromosomeResult})
         for temp in discriminatorResult:
             fitList.append(temp)
 
@@ -162,10 +157,25 @@ for it in range(20000):
             population[p][1] = fitList[p]
 
         population = ga.Evolve(population)
-    print(1)
+        bestChromosomeResult = ChromosomeResult[:16]
+    print("round:", it, ";best fit:", discriminatorResult[0])
+
+    # 投入数据并根据优化方法迭代一次，计算损失后返回损失值
+    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, X_: ChromosomeResult})
+
+    # 每2000次输出一张生成器生成的图片
+    if it % 50 == 0:
+        fig = plot(bestChromosomeResult)
+        plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
+        i += 1
+        plt.close(fig)
 
     # 每迭代2000次输出迭代数、生成器损失和判别器损失
-    if it % 2000 == 0:
+    if it % 50 == 0:
         print('Iter: {}'.format(it))
         print('D loss: {:.4}'. format(D_loss_curr))
         print()
+
+    if it % 50 == 0:
+        for temp in population:
+            temp[0] = ga.Append(temp[0])

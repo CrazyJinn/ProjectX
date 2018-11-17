@@ -106,9 +106,6 @@ def GetResultForLine(result1, result2):
 def Evolve(population):
     population = [x for x in sorted(population, key=lambda o: o[1], reverse=True)]
 
-    for fit in population[:3]:
-        print("fit:", fit[1])
-
     result = []
 
     parentCount = (int)(len(population) / 3)
@@ -130,7 +127,7 @@ def Evolve(population):
         result.append([Crossover(result[choiceA][0], result[choiceB][0]), 0.0])
 
     for temp in result:
-        if random.random() < 0.05:
+        if random.random() < 0.1:
             temp[0] = Mutation(temp[0])
 
     return result

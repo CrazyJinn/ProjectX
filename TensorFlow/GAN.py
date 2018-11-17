@@ -115,7 +115,7 @@ mb_size = 128
 Z_dim = 100
 
 #读取数据集MNIST，并放在当前目录data文件夹下MNIST文件夹中，如果该地址没有数据，则下载数据至该文件夹
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
 
 #打开一个会话运行计算图
 sess = tf.Session()
@@ -141,7 +141,13 @@ for it in range(20000):
         plt.close(fig)
     
     #next_batch抽取下一个批量的图片，该方法返回一个矩阵，即shape=[mb_size，784]，每一行是一张图片，共批量大小行
-    X_mb, _ = mnist.train.next_batch(mb_size)
+    #现在只针对训练3的图片
+    X_mb = []
+    batchX, batchY = mnist.train.next_batch(mb_size)
+    for j in range(mb_size):
+        if batchY[j] == 3:
+            X_mb.append(batchX[j])
+
     
     #投入数据并根据优化方法迭代一次，计算损失后返回损失值
     _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
