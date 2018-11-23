@@ -53,3 +53,15 @@ def GetChromosomeResult(chromosome, samplingList):
     for gene in chromosome:
         result += GetGeneResult(gene, samplingList)
     return result
+
+def GetChromosomeResultWithFilter(chromosome, samplingList):
+    '''
+    返回染色体所表达的方程的值
+    x: 未知数
+    '''
+    result = 0
+    for gene in chromosome:
+        result += GetGeneResult(gene, samplingList)
+    result[result >= 0.5] = 1
+    result[result < 0.5] = 0
+    return result

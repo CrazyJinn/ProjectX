@@ -102,9 +102,21 @@ def GetResultForLine(result1, result2):
     return np.sum(np.power(np.add(result1, - result2), 2))
 # 这里是计算线适应度的 end
 
+# 这里是计算线适应度的
+
+
+def FitnessWithFilter(chromosome, xSamplingList, ySamplingList):
+    '''
+    计算直线适应度
+    '''
+    result = GetResultForLine(ySamplingList, ch.GetChromosomeResultWithFilter(chromosome, xSamplingList))
+    return result
+
+# 这里是计算线适应度的 end
+
 
 def Evolve(population):
-    population = [x for x in sorted(population, key=lambda o: o[1], reverse=True)]
+    population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
 
     result = []
 
@@ -115,8 +127,8 @@ def Evolve(population):
         result.append([temp[0], 0.0])
 
     # for temp in population[:parentCount]:
-    #     print(temp[0])
-    #     print("fit:", temp[1])
+        # print(temp[0])
+        # print("fit:", temp[1])
 
     # result.append(population[np.random.randint(0, 3) + 7])
     # result.append(population[np.random.randint(0, 10) + 10])
