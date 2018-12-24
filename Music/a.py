@@ -62,7 +62,7 @@ def gen_image(arr):
 
 
 
-for i in range(300):
+for i in range(3000):
     for temp in population:
         if(i % 50 == 0):
             temp[0] = ga.Append(temp[0])
@@ -79,10 +79,13 @@ print(population[0][0])
 print(ga.FitnessWithFilter(chromosome1, xSamplingList, ySamplingList))
 print('+++++++++++++++++')
 
-plt.figure()
-plt.ion()
-plt.axis([-2.0, 80.0, -2, 2])
-plt.plot(xSamplingList, ySamplingList,  label='Original data', color='red')
-plt.plot(xSamplingList, ch.GetChromosomeResultWithFilter(
-    chromosome1, xSamplingList),  label='Fitted line', color='blue')
-plt.pause(20)
+arr = ch.GetChromosomeResultWithFilter(chromosome1, xSamplingList)
+
+# plt.figure()
+# plt.ion()
+# plt.axis([-2.0, 80.0, -2, 2])
+# plt.plot(xSamplingList, ySamplingList,  label='Original data', color='red')
+# plt.plot(xSamplingList, arr,  label='Fitted line', color='blue')
+# plt.pause(20)
+
+gen_image(arr).show()

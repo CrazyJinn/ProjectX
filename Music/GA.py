@@ -126,9 +126,8 @@ def Evolve(population):
     for temp in population[:parentCount]:
         result.append([temp[0], 0.0])
 
-    # for temp in population[:parentCount]:
-        # print(temp[0])
-        # print("fit:", temp[1])
+    for temp in population[:3]:
+        print("fit:", temp[1])
 
     # result.append(population[np.random.randint(0, 3) + 7])
     # result.append(population[np.random.randint(0, 10) + 10])
@@ -139,7 +138,7 @@ def Evolve(population):
         result.append([Crossover(result[choiceA][0], result[choiceB][0]), 0.0])
 
     for temp in result:
-        if random.random() < 0.1:
+        if random.random() < 0.05:
             temp[0] = Mutation(temp[0])
 
     return result

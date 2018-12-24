@@ -145,7 +145,7 @@ for it in range(20000):
     X_mb = []
     batchX, batchY = mnist.train.next_batch(mb_size)
     for j in range(mb_size):
-        if batchY[j] == 3:
+        if batchY[j] == 4:
             X_mb.append(batchX[j])
 
     

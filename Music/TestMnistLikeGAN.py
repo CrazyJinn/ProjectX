@@ -40,7 +40,7 @@ X_ = tf.placeholder(tf.float32, shape=[None, 784])
 
 
 def generator(chromosome):
-    return ch.GetChromosomeResult(chromosome, samplingList) / 50
+    return ch.GetChromosomeResultWithFilter(chromosome, samplingList)
 
 
 population = []
@@ -133,7 +133,9 @@ for it in range(20000):
     X_mb = []
     batchX, batchY = mnist.train.next_batch(mb_size)
     for j in range(mb_size):
-        if batchY[j] == 3:
+        if batchY[j] == 4:
+            batchX[j][batchX[j] >= 0.5] = 1
+            batchX[j][batchX[j] < 0.5] = 0
             X_mb.append(batchX[j])
 
     bestChromosomeResult = []
@@ -144,8 +146,6 @@ for it in range(20000):
 
         for chromosome in population:
             imgPX = generator(chromosome[0])
-            imgPX[imgPX > 1] = 1
-            imgPX[imgPX < 0] = 0
             ChromosomeResult.append(imgPX)
 
         discriminatorResult = sess.run(
