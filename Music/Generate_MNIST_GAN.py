@@ -1,3 +1,7 @@
+'''
+整体思路非常类似于dcGAN，只是生成器换成了遗传算法
+'''
+
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 import numpy as np

@@ -1,3 +1,10 @@
+'''
+使用遗传算法生成图像
+使用CNN来判别生成出来的图像质量。换言之，使用CNN来计算fit
+非常依赖CNN本身的判别效果，若判别错，并没有更新CNN
+'''
+
+
 import numpy as np
 import GA as ga
 import Chromosome as ch

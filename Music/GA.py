@@ -109,14 +109,20 @@ def FitnessWithFilter(chromosome, xSamplingList, ySamplingList):
     '''
     计算直线适应度
     '''
-    result = GetResultForLine(ySamplingList, ch.GetChromosomeResultWithFilter(chromosome, xSamplingList))
+    result = GetResultForLine(
+        ySamplingList, ch.GetChromosomeResultWithFilter(chromosome, xSamplingList))
     return result
 
 # 这里是计算线适应度的 end
 
 
-def Evolve(population):
-    population = [x for x in sorted(population, key=lambda o: o[1], reverse=False)]
+def Evolve(population, reverse=False):
+    '''
+    进化
+    reverse = false，种群根据fit从小到大排列
+    reverse = true，种群根据fit从大到小排列
+    '''
+    population = [x for x in sorted(population, key=lambda o: o[1], reverse=reverse)]
 
     result = []
 
