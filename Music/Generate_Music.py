@@ -2,24 +2,25 @@ import numpy as np
 import GA as ga
 import Chromosome as ch
 
+chromosome = [-10, -1, -1, -5, 6, -2]
+# population = []
+# for i in range(300):
+#     population.append([ch.GenerateChromosome(), 0.0])
 
-chromosomeList = [[-10, -1, -1, -5, 6, -2]]
-# chromosomeList = []
-# for i in range(10):
-#     chromosomeList.append(ch.GenerateChromosome())
+samplingList = [1]
 
-samplingList = []
-for i in range(12):
-    samplingList.append(i * np.pi/4)
 
-for temp in chromosomeList:
-    print(ga.Fitness(temp, samplingList))
+# for i in range(300):
+#     for temp in population:
+#         if(i % 50 == 0):
+#             temp[0] = ga.Append(temp[0])
+#         temp[1] = ga.FitnessForLine(temp[0], xSamplingList, ySamplingList)
 
-print('---------------------------------')
+#     population = ga.Evolve(population)
+#     print(i)
 
-for temp in chromosomeList:
-    ga.Mutation(temp)
 
-for temp in chromosomeList:
-    print(ga.Fitness(temp, samplingList))
+def filter(asd):
+    print(asd)
 
+ch.GetChromosomeResultWithFilter(chromosome,samplingList,filter)
