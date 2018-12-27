@@ -43,8 +43,14 @@ X_ = tf.placeholder(tf.float32, shape=[None, 784])
 # 定义生成器
 
 
+def filter(result):
+    result[result >= 0.5] = 1
+    result[result < 0.5] = 0
+    return result
+
+
 def generator(chromosome):
-    return ch.GetChromosomeResultWithFilter(chromosome, samplingList)
+    return ch.GetChromosomeResultWithFilter(chromosome, samplingList, filter)
 
 
 population = []
@@ -137,7 +143,7 @@ for it in range(20000):
     X_mb = []
     batchX, batchY = mnist.train.next_batch(mb_size)
     for j in range(mb_size):
-        if batchY[j] == 4:
+        if batchY[j] == 8:
             batchX[j][batchX[j] >= 0.5] = 1
             batchX[j][batchX[j] < 0.5] = 0
             X_mb.append(batchX[j])
@@ -160,7 +166,7 @@ for it in range(20000):
         for p in range(populationCount):
             population[p][1] = fitList[p]
 
-        population = ga.Evolve(population)
+        population = ga.Evolve(population, True)
         bestChromosomeResult = ChromosomeResult[:16]
     print("round:", it, ";best fit:", discriminatorResult[0])
 

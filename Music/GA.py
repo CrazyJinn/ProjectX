@@ -69,53 +69,6 @@ def Append(chromosome):
     chromosome.append(ch.GenerateGene())
     return chromosome
 
-# 这里是计算music适应度的
-
-
-def Fitness(chromosome, samplingList):
-    '''
-    计算适应度
-    '''
-    result = 0.0
-    for sampling in samplingList:
-        result = result + GetAbsFromNearestInt(ch.GetChromosomeResult(chromosome, sampling))
-    return result
-
-
-def GetAbsFromNearestInt(number):
-    temp = round(number)
-    return np.abs(number - temp)
-# 这里是计算music适应度的 end
-
-# 这里是计算线适应度的
-
-
-def FitnessForLine(chromosome, xSamplingList, ySamplingList):
-    '''
-    计算直线适应度
-    '''
-    result = GetResultForLine(ySamplingList, ch.GetChromosomeResult(chromosome, xSamplingList))
-    return result
-
-
-def GetResultForLine(result1, result2):
-    return np.sum(np.power(np.add(result1, - result2), 2))
-# 这里是计算线适应度的 end
-
-# 这里是计算线适应度的
-
-
-def FitnessWithFilter(chromosome, xSamplingList, ySamplingList):
-    '''
-    计算直线适应度
-    '''
-    result = GetResultForLine(
-        ySamplingList, ch.GetChromosomeResultWithFilter(chromosome, xSamplingList))
-    return result
-
-# 这里是计算线适应度的 end
-
-
 def Evolve(population, reverse=False):
     '''
     进化

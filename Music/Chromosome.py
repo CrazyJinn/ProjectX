@@ -28,7 +28,8 @@ def GenerateChromosome():
 
 def GetGeneResult(gene, samplingList):
     '''
-    计算 a*cos(b*10^c*π+d)^e-f
+    计算基因在采样上表达的值
+    方程为 ： a*cos(b*10^c*π+d)^e-f
     '''
     result = 0
     result = np.multiply(gene[1], samplingList)  # b*π
@@ -46,8 +47,7 @@ def GetGeneResult(gene, samplingList):
 
 def GetChromosomeResult(chromosome, samplingList):
     '''
-    返回染色体所表达的方程的值
-    x: 未知数
+    返回染色体在采样上表达的值
     '''
     result = 0
     for gene in chromosome:
@@ -56,15 +56,17 @@ def GetChromosomeResult(chromosome, samplingList):
 
 
 def GetChromosomeResultWithFilter(chromosome, samplingList, filter):
-    # '''
-    # 返回染色体所表达的方程的值
-    # x: 未知数
-    # '''
-    # result = 0
-    # for gene in chromosome:
-    #     result += GetGeneResult(gene, samplingList)
+    '''
+    返回染色体在采样上表达的值
+    filter : 滤波方法；以下是一个简单的滤波方法：
+        def filter(result):
+            result[result >= 0.5] = 1
+            result[result < 0.5] = 0
+            return result
+    '''
+    result = 0
+    for gene in chromosome:
+        result += GetGeneResult(gene, samplingList)
 
-    result = filter(111)
-    # result[result >= 0.5] = 1
-    # result[result < 0.5] = 0
-    # return result
+    result = filter(result)
+    return result

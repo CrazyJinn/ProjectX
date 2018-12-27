@@ -24,3 +24,21 @@ def filter(asd):
     print(asd)
 
 ch.GetChromosomeResultWithFilter(chromosome,samplingList,filter)
+
+# 这里是计算music适应度的
+
+def Fitness(chromosome, samplingList):
+    '''
+    计算适应度
+    '''
+    result = 0.0
+    for sampling in samplingList:
+        result = result + GetAbsFromNearestInt(ch.GetChromosomeResult(chromosome, sampling))
+    return result
+
+
+def GetAbsFromNearestInt(number):
+    temp = round(number)
+    return np.abs(number - temp)
+
+# 这里是计算music适应度的 end

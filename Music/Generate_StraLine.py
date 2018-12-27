@@ -2,9 +2,20 @@ import numpy as np
 import GA as ga
 import Chromosome as ch
 
+def FitnessForLine(chromosome, xSamplingList, ySamplingList):
+    '''
+    计算直线适应度
+    '''
+    result = GetResultForLine(ySamplingList, ch.GetChromosomeResult(chromosome, xSamplingList))
+    return result
+
+
+def GetResultForLine(result1, result2):
+    return np.sum(np.power(np.add(result1, - result2), 2))
+
 # population = [[[-10, -1, -1, -5, 6, -2]],0.0]
 population = []
-for i in range(300):
+for i in range(30):
     population.append([ch.GenerateChromosome(), 0.0])
 
 xSamplingList = []
@@ -26,7 +37,7 @@ for i in range(300):
     for temp in population:
         if(i % 50 == 0):
             temp[0] = ga.Append(temp[0])
-        temp[1] = ga.FitnessForLine(temp[0], xSamplingList, ySamplingList)
+        temp[1] = FitnessForLine(temp[0], xSamplingList, ySamplingList)
 
     population = ga.Evolve(population)
     print(i)
@@ -36,7 +47,7 @@ chromosome1 = population[0][0]
 
 print('+++++++++++++++++')
 print(population[0][0])
-print(ga.FitnessForLine(chromosome1, xSamplingList, ySamplingList))
+print(FitnessForLine(chromosome1, xSamplingList, ySamplingList))
 print('+++++++++++++++++')
 
 import matplotlib.pyplot as plt
@@ -47,3 +58,6 @@ plt.plot(xSamplingList, ySamplingList,  label='Original data', color='red')
 plt.plot(xSamplingList, ch.GetChromosomeResult(
     chromosome1, xSamplingList),  label='Fitted line', color='blue')
 plt.pause(20)
+
+
+
