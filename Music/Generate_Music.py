@@ -8,9 +8,26 @@ import Chromosome as ch
 
 # samplingList = [1]
 
-noteList = []
-for i in range(280):
-    noteList.append((i / 10) - 1)
+noteList = [5,5,6,8,
+            8,6,5,3,
+            1,1,3,5,
+            5,3,3]
+
+melody = [2,2,2,2,
+          2,2,2,2,
+          2,2,2,2,
+          3,1,4]
+
+# noteList = [5,5,6,8,
+#             8,6,5,3,
+#             1,1,3,5,
+#             5,3,3,
+#             5,5,6,8,
+#             8,6,5,3,
+#             1,1,3,5,
+#             3,1,1]
+# for i in range(280):
+#     noteList.append((i / 10) - 1)
 
 
 def noteFilter(noteList):
@@ -22,11 +39,23 @@ def noteFilter(noteList):
 noteList = noteFilter(noteList)
 
 
-def interval(aNote, bNote):
-    
-    return aNote - bNote + 1
+def getInterval(firstNote, secondNote): 
+    return secondNote - firstNote + 1
 
+def getIntervalList(noteList):
+    result = []
+    for i in range(len(noteList) -1):
+        result.append(getInterval(noteList[i],noteList[i+1]))
+    return result
 
+def getFit(noteList,melody):
+    fit = 0
+    for i in range(len(noteList) -1):
+        interval = getInterval(noteList[i],noteList[i+1])
+        if(interval)
+    return result
+
+print(getIntervalList(noteList))
 
     # ch.GetChromosomeResultWithFilter(chromosome,samplingList,filter)
 
