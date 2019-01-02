@@ -1,4 +1,3 @@
-
 import random
 import numpy as np
 import Const as const
@@ -69,35 +68,32 @@ def Append(chromosome):
     chromosome.append(ch.GenerateGene())
     return chromosome
 
-def Evolve(population, reverse=False):
+def WeedOut(population, fitList, quantity, reverse=False):
     '''
-    进化
+    淘汰
+    quantity , 期望淘汰后的种群数量
     reverse = false，种群根据fit从小到大排列
     reverse = true，种群根据fit从大到小排列
     '''
-    population = [x for x in sorted(population, key=lambda o: o[1], reverse=reverse)]
+    data = [(chromosome, fit) for chromosome, fit in zip(population, fitList)]
+    data = [x for x in sorted(data, key=lambda o: o[1], reverse=reverse)]
+    return [chromosome for chromosome, fit in data][:quantity]
 
-    result = []
 
-    parentCount = (int)(len(population) / 3)
-    childCount = parentCount * 2
-
-    for temp in population[:parentCount]:
-        result.append([temp[0], 0.0])
-
-    for temp in population[:3]:
-        print("fit:", temp[1])
-
-    # result.append(population[np.random.randint(0, 3) + 7])
-    # result.append(population[np.random.randint(0, 10) + 10])
-    # result.append(population[np.random.randint(0, 10) + 20])
+def Evolve(population, quantity):
+    '''
+    进化
+    种群中幸存的所有染色体交配机会均等
+    '''
+    parentCount = len(population)
+    childCount = quantity - parentCount
 
     for i in range(childCount):
         choiceA, choiceB = np.random.choice(parentCount, 2, replace=False)
-        result.append([Crossover(result[choiceA][0], result[choiceB][0]), 0.0])
+        population.append(Crossover(population[choiceA], population[choiceB]))
 
-    for temp in result:
+    for chromosome in population:
         if random.random() < 0.05:
-            temp[0] = Mutation(temp[0])
+            chromosome = Mutation(chromosome)
 
-    return result
+    return population
