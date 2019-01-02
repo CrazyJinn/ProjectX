@@ -1,6 +1,10 @@
 import numpy as np
 import GA as ga
 import Chromosome as ch
+import time
+
+start = time.clock()
+
 
 def FitnessForLine(chromosome, xSamplingList, ySamplingList):
     '''
@@ -13,10 +17,11 @@ def FitnessForLine(chromosome, xSamplingList, ySamplingList):
 def GetResultForLine(result1, result2):
     return np.sum(np.power(np.add(result1, - result2), 2))
 
-# population = [[[-10, -1, -1, -5, 6, -2]],0.0]
+
 population = []
-for i in range(30):
-    population.append([ch.GenerateChromosome(), 0.0])
+populationQuantity = 300
+for i in range(populationQuantity):
+    population.append(ch.GenerateChromosome())
 
 xSamplingList = []
 ySamplingList = []
@@ -34,20 +39,23 @@ for i in range(120):
     #     ySamplingList.append(0)
 
 for i in range(300):
-    for temp in population:
+    fitList = []
+    for chromosome in population:
         if(i % 50 == 0):
-            temp[0] = ga.Append(temp[0])
-        temp[1] = FitnessForLine(temp[0], xSamplingList, ySamplingList)
+            chromosome = ga.Append(chromosome)
+        fitList.append(FitnessForLine(chromosome, xSamplingList, ySamplingList))
 
-    population = ga.Evolve(population)
+    population = ga.WeedOut(population, fitList, 100)
+    population = ga.Evolve(population, populationQuantity)
     print(i)
     # input('------------------')
 
-chromosome1 = population[0][0]
+chromosome1 = population[0]
 
 print('+++++++++++++++++')
-print(population[0][0])
+print(population[0])
 print(FitnessForLine(chromosome1, xSamplingList, ySamplingList))
+print("time span:",time.clock() - start)
 print('+++++++++++++++++')
 
 import matplotlib.pyplot as plt
@@ -58,6 +66,3 @@ plt.plot(xSamplingList, ySamplingList,  label='Original data', color='red')
 plt.plot(xSamplingList, ch.GetChromosomeResult(
     chromosome1, xSamplingList),  label='Fitted line', color='blue')
 plt.pause(20)
-
-
-
