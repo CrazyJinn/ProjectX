@@ -1,77 +1,93 @@
 import numpy as np
 import GA as ga
 import Chromosome as ch
-
-# population = []
-# for i in range(300):
-#     population.append([ch.GenerateChromosome(), 0.0])
-
-# samplingList = [1]
-
-noteList = [5,5,6,8,
-            8,6,5,3,
-            1,1,3,5,
-            5,3,3]
-
-melody = [2,2,2,2,
-          2,2,2,2,
-          2,2,2,2,
-          3,1,4]
-
-# noteList = [5,5,6,8,
-#             8,6,5,3,
-#             1,1,3,5,
-#             5,3,3,
-#             5,5,6,8,
-#             8,6,5,3,
-#             1,1,3,5,
-#             3,1,1]
-# for i in range(280):
-#     noteList.append((i / 10) - 1)
+import time
 
 
-def noteFilter(noteList):
+def NoteFilter(noteList):
     result = np.ceil(noteList)
     result[result < 0] = 0
     return result
 
 
-noteList = noteFilter(noteList)
+def GetInterval(firstNote, secondNote):
+    if(firstNote == 0 or secondNote == 0):
+        return 0
+    else:
+        return np.abs(secondNote - firstNote) + 1
 
 
-def getInterval(firstNote, secondNote): 
-    return secondNote - firstNote + 1
-
-def getIntervalList(noteList):
+def GetIntervalList(noteList):
     result = []
-    for i in range(len(noteList) -1):
-        result.append(getInterval(noteList[i],noteList[i+1]))
+    for i in range(len(noteList) - 1):
+        result.append(GetInterval(noteList[i], noteList[i + 1]))
     return result
 
-def getFit(noteList,melody):
-    fit = 0
-    for i in range(len(noteList) -1):
-        interval = getInterval(noteList[i],noteList[i+1])
-        if(interval)
+
+def GetNoiseCount(noteList, melody):
+    result = 0
+    for i in range(len(noteList) - 1):
+        interval = GetInterval(noteList[i], noteList[i + 1])
+        if(interval > 8 and melody[i] <= 2):
+            result += 1
     return result
 
-print(getIntervalList(noteList))
 
-    # ch.GetChromosomeResultWithFilter(chromosome,samplingList,filter)
+def GetZeroCount(noteList, melody):
+    result = 0
+    for note in noteList:
+        if(note == 0):
+            result += 1
+    return result
 
-    # # 这里是计算music适应度的
 
-    # def Fitness(chromosome, samplingList):
-    #     '''
-    #     计算适应度
-    #     '''
-    #     result = 0.0
-    #     for sampling in samplingList:
-    #         result = result + GetAbsFromNearestInt(ch.GetChromosomeResult(chromosome, sampling))
-    #     return result
+def GetSamplingList(melody):
+    result = [0]
+    sampling = 0
+    for index in melody:
+        sampling += index
+        result.append(sampling)
+    return result
 
-    # def GetAbsFromNearestInt(number):
-    #     temp = round(number)
-    #     return np.abs(number - temp)
 
-    # 这里是计算music适应度的 end
+def GetFit(chromosome, melody):
+    samplingList = GetSamplingList(melody)
+    noteList = ch.GetChromosomeResultWithFilter(chromosome, samplingList, NoteFilter)
+    fit = GetZeroCount(noteList, melody)
+    fit += GetNoiseCount(noteList, melody)
+    return fit
+
+
+start = time.clock()
+
+population = []
+populationQuantity = 300
+for i in range(populationQuantity):
+    population.append(ch.GenerateChromosome())
+
+melody = [2, 2, 2, 2,
+          2, 2, 2, 2,
+          2, 2, 2, 2,
+          3, 1, 4]
+
+samplingList = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 27, 28, 32]
+
+
+for i in range(300):
+    fitList = []
+    for chromosome in population:
+        if(i % 50 == 0):
+            chromosome = ga.Append(chromosome)
+
+        fitList.append(GetFit(chromosome, melody))
+
+    population = ga.WeedOut(population, fitList, 100)
+    population = ga.Evolve(population, populationQuantity)
+    print(i)
+    # input('------------------')
+
+print('+++++++++++++++++')
+print(GetFit(population[0], melody))
+print(ch.GetChromosomeResultWithFilter(population[0], samplingList, NoteFilter))
+print("time span:", time.clock() - start)
+print('+++++++++++++++++')
