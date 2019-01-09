@@ -7,6 +7,16 @@ import time
 def NoteFilter(noteList):
     result = np.ceil(noteList)
     result[result < 0] = 0
+
+    # # todo 这里将音符归一化写得不好，要修改
+    # minNote = 0
+    # for note in sorted(list(set(result))):
+    #     if(note != 0):
+    #         minNote = note - 1
+    #         break
+    # result -= minNote
+    # result[result < 0] = 0
+    # # end todo
     return result
 
 
@@ -52,7 +62,8 @@ def GetSamplingList(melody):
 
 def GetFit(chromosome, melody):
     samplingList = GetSamplingList(melody)
-    noteList = ch.GetChromosomeResultWithFilter(chromosome, samplingList, NoteFilter)
+    noteList = ch.GetChromosomeResultWithFilter(
+        chromosome, samplingList, NoteFilter)
     fit = GetZeroCount(noteList, melody)
     fit += GetNoiseCount(noteList, melody)
     return fit
@@ -88,6 +99,7 @@ for i in range(300):
 
 print('+++++++++++++++++')
 print(GetFit(population[0], melody))
-print(ch.GetChromosomeResultWithFilter(population[0], samplingList, NoteFilter))
+print(ch.GetChromosomeResultWithFilter(
+    population[0], samplingList, NoteFilter))
 print("time span:", time.clock() - start)
 print('+++++++++++++++++')
