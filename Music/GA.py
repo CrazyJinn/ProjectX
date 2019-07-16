@@ -1,4 +1,3 @@
-import random
 import numpy as np
 import Const as const
 import Chromosome as ch
@@ -68,6 +67,7 @@ def Append(chromosome):
     chromosome.append(ch.GenerateGene())
     return chromosome
 
+
 def WeedOut(population, fitList, quantity, reverse=False):
     '''
     淘汰
@@ -80,10 +80,12 @@ def WeedOut(population, fitList, quantity, reverse=False):
     return [chromosome for chromosome, fit in data][:quantity]
 
 
-def Evolve(population, quantity):
+def Evolve(population, quantity, mutationRate=0.05):
     '''
     进化
     种群中幸存的所有染色体交配机会均等
+    quantity：期望进化完成后种群的总数
+    mutationRate：变异率
     '''
     parentCount = len(population)
     childCount = quantity - parentCount
@@ -93,7 +95,7 @@ def Evolve(population, quantity):
         population.append(Crossover(population[choiceA], population[choiceB]))
 
     for chromosome in population:
-        if random.random() < 0.05:
+        if np.random.random() < mutationRate:
             chromosome = Mutation(chromosome)
 
     return population

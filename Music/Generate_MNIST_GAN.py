@@ -54,9 +54,9 @@ def generator(chromosome):
 
 
 population = []
-populationCount = 300
+populationCount = 600
 for i in range(populationCount):
-    population.append([ch.GenerateChromosome(), 0.0])
+    population.append(ch.GenerateChromosome())
 
 # 定义判别器
 
@@ -120,7 +120,7 @@ G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
 D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
 
 # 选择训练的批量大小
-mb_size = 128
+mb_size = 200
 
 # 读取数据集MNIST，并放在当前目录data文件夹下MNIST文件夹中，如果该地址没有数据，则下载数据至该文件夹
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
@@ -141,21 +141,25 @@ for it in range(20000):
 
     # next_batch抽取下一个批量的图片，该方法返回一个矩阵，即shape=[mb_size，784]，每一行是一张图片，共批量大小行
     X_mb = []
-    batchX, batchY = mnist.train.next_batch(mb_size)
-    for j in range(mb_size):
-        if batchY[j] == 8:
-            batchX[j][batchX[j] >= 0.5] = 1
-            batchX[j][batchX[j] < 0.5] = 0
-            X_mb.append(batchX[j])
+
+    while(len(X_mb) < 50):
+        batchX, batchY = mnist.train.next_batch(mb_size)
+        for j in range(mb_size):
+            if batchY[j] == 5:
+                batchX[j][batchX[j] >= 0.5] = 1
+                batchX[j][batchX[j] < 0.5] = 0
+                X_mb.append(batchX[j])
 
     bestChromosomeResult = []
 
-    for j in range(30):
+    gaRound = 0
+    gaMutationRate = 0.05
+    while(True):
         ChromosomeResult = []
         fitList = []
 
         for chromosome in population:
-            imgPX = generator(chromosome[0])
+            imgPX = generator(chromosome)
             ChromosomeResult.append(imgPX)
 
         discriminatorResult = sess.run(
@@ -163,15 +167,26 @@ for it in range(20000):
         for temp in discriminatorResult:
             fitList.append(temp)
 
-        for p in range(populationCount):
-            population[p][1] = fitList[p]
+        fitListSort = [x for x in sorted(fitList, key=lambda o: o, reverse=True)]
+        avgFit = np.mean(fitListSort[:200])
+        if(avgFit > 0.5):
+            bestChromosomeResult = ChromosomeResult[:16]
+            break
+        gaRound += 1
+        gaMutationRate += 0.001
+        if(gaRound > 100):
+            for temp in population:
+                temp = ga.Append(temp)
+            gaRound = 0
+            gaMutationRate = 0.05
+        population = ga.WeedOut(population, fitList, 200, True)
+        population = ga.Evolve(population, populationCount, gaMutationRate)
+        print("ga round:", gaRound, ";avg fit:", avgFit, ";mutation rate:", gaMutationRate)
 
-        population = ga.Evolve(population, True)
-        bestChromosomeResult = ChromosomeResult[:16]
-    print("round:", it, ";best fit:", discriminatorResult[0])
+    print("normal round:", it, ";avg fit:", avgFit)
 
     # 投入数据并根据优化方法迭代一次，计算损失后返回损失值
-    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, X_: ChromosomeResult})
+    _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, X_: ChromosomeResult[:200]})
 
     # 每2000次输出一张生成器生成的图片
     if it % 50 == 0:
@@ -185,7 +200,3 @@ for it in range(20000):
         print('Iter: {}'.format(it))
         print('D loss: {:.4}'. format(D_loss_curr))
         print()
-
-    if it % 50 == 0:
-        for temp in population:
-            temp[0] = ga.Append(temp[0])
