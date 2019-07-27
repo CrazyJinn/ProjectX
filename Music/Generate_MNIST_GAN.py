@@ -170,7 +170,9 @@ for it in range(20000):
         fitListSort = [x for x in sorted(fitList, key=lambda o: o, reverse=True)]
         avgFit = np.mean(fitListSort[:200])
         if(avgFit > 0.5):
-            bestChromosomeResult = ChromosomeResult[:16]
+            data = [(ChromosomeResult, fit) for ChromosomeResult, fit in zip(ChromosomeResult, fitList)]
+            data = [x for x in sorted(data, key=lambda o: o[1], reverse=True)]
+            bestChromosomeResult = [ChromosomeResult for ChromosomeResult, fit in data][:16]
             break
         gaRound += 1
         gaMutationRate += 0.001
@@ -181,7 +183,7 @@ for it in range(20000):
             gaMutationRate = 0.05
         population = ga.WeedOut(population, fitList, 200, True)
         population = ga.Evolve(population, populationCount, gaMutationRate)
-        print("ga round:", gaRound, ";avg fit:", avgFit, ";mutation rate:", gaMutationRate)
+        print("ga round:", gaRound, ";avg fit:", avgFit, ";chromosome len:", len(population[0]))
 
     print("normal round:", it, ";avg fit:", avgFit)
 

@@ -1,4 +1,3 @@
-
 '''
 整体思路非常类似于dcGAN，只是生成器换成了遗传算法
 '''
@@ -10,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
 import GA as ga
-import Chromosome_tf as ch
+import Chromosome as ch
 
 # 该函数将给出权重初始化的方法
 
@@ -36,19 +35,10 @@ D_b2 = tf.Variable(tf.zeros(shape=[1]))
 theta_D = [D_W1, D_W2, D_b1, D_b2]
 
 samplingList = []
-for i in range(784):
-    samplingList.append(i / 10)
+for i in range(28):
+    samplingList.append(i)
 
 X_ = tf.placeholder(tf.float32, shape=[None, 784])
-
-a = tf.placeholder("float32")
-b = tf.placeholder("float32")
-c = tf.placeholder("int32")
-d = tf.placeholder("float32")
-e = tf.placeholder("float32")
-f = tf.placeholder("float32")
-placeHolderList = [a, b, c, d, e, f]
-geneResult = ch.GetGeneResult(placeHolderList, samplingList)
 
 # 定义生成器
 
@@ -60,18 +50,20 @@ def filter(result):
 
 
 def generator(chromosome):
-    # return ch.GetChromosomeResultWithFilter(chromosome, samplingList, filter)
-    result = 0
-    for gene in chromosome:
-        result += sess.run(geneResult, feed_dict={a: gene[0], b: gene[1], c: gene[2], d: gene[3], e: gene[4], f: gene[5]})
-    result = filter(result)
-    return result
+    result = []
+    xResult = ch.GetChromosomeResult(chromosome[0], samplingList)
+    yResult = ch.GetChromosomeResult(chromosome[1], samplingList)
+    for x in xResult:
+        for y in yResult:
+            result.append(x + y)
+    return filter(np.array(result))
 
 
 population = []
-populationCount = 600
+populationCount = 300
 for i in range(populationCount):
-    population.append(ch.GenerateChromosome())
+    population.append([ch.GenerateChromosome(), ch.GenerateChromosome()])
+
 
 # 定义判别器
 
@@ -160,7 +152,7 @@ for it in range(20000):
     while(len(X_mb) < 50):
         batchX, batchY = mnist.train.next_batch(mb_size)
         for j in range(mb_size):
-            if batchY[j] == 6:
+            if batchY[j] == 5:
                 batchX[j][batchX[j] >= 0.5] = 1
                 batchX[j][batchX[j] < 0.5] = 0
                 X_mb.append(batchX[j])
@@ -183,8 +175,8 @@ for it in range(20000):
             fitList.append(temp)
 
         fitListSort = [x for x in sorted(fitList, key=lambda o: o, reverse=True)]
-        avgFit = np.mean(fitListSort[:200])
-        if(avgFit > 0.5):
+        avgFit = np.mean(fitListSort[:20])
+        if(avgFit > 0.50):
             bestChromosomeResult = ChromosomeResult[:16]
             break
         gaRound += 1
@@ -194,9 +186,9 @@ for it in range(20000):
                 temp = ga.Append(temp)
             gaRound = 0
             gaMutationRate = 0.05
-        population = ga.WeedOut(population, fitList, 200, True)
+        population = ga.WeedOut(population, fitList, 100, True)
         population = ga.Evolve(population, populationCount, gaMutationRate)
-        print("ga round:", gaRound, ";avg fit:", avgFit, ";mutation rate:", gaMutationRate)
+        print("ga round:", gaRound, ";avg fit:", avgFit, ";chromosome len:", len(population[0][0]))
 
     print("normal round:", it, ";avg fit:", avgFit)
 
@@ -215,14 +207,3 @@ for it in range(20000):
         print('Iter: {}'.format(it))
         print('D loss: {:.4}'. format(D_loss_curr))
         print()
-
-
-
-
-
-
-
-# with tf.Session() as sess:
-#     sess.run(tf.global_variables_initializer())
-
-#     print(result)
