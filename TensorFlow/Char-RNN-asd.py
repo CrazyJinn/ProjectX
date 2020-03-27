@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # # 《安娜卡列尼娜》新编——利用TensorFlow构建LSTM模型
@@ -9,7 +8,6 @@
 # 
 # 数据集来自于外文版《安娜卡列妮娜》书籍的文本文档（本文后面会提供整个project的git链接）。
 
-# In[1]:
 
 import time
 from collections import namedtuple
@@ -20,10 +18,12 @@ import tensorflow as tf
 
 # # 1 数据加载与预处理
 
-# In[2]:
 
-vocab = codecs.open('C:\\Users\\jj84\\Desktop\\李白五言.txt',
-                    encoding='utf-8').read().replace('\n', '').replace('\r', '')
+# with open('C:\\Users\\jj84\\Desktop\\李白五言.txt', 'r') as f:
+#     text=f.read()
+# vocab = set(text)
+vocab = codecs.open('C:\\Users\\jj84\\Desktop\\李白test.txt',
+                    encoding='utf-8').read()
 vocab_to_int = {c: i for i, c in enumerate(vocab)}
 int_to_vocab = dict(enumerate(vocab))
 encoded = np.array([vocab_to_int[c] for c in vocab], dtype=np.int32)
@@ -43,8 +43,6 @@ encoded = np.array([vocab_to_int[c] for c in vocab], dtype=np.int32)
 # 然而由于RNN中存在着“记忆”，也就是循环。事实上一个循环神经网络能够被看做是多个相同神经网络的叠加，在这个系统中，每一个网络都会传递信息给下一个。上面的图中，我们可以看到整个RNN网络由三个相同的神经网络单元叠加起来的序列。那么在这里就有了第二个概念sequence_length（也叫steps），中文叫序列长度。上图中序列长度是3，可以看到将三个字符作为了一个序列。
 # 
 # 有了上面两个概念，我们来规范一下后面的定义。我们定义一个batch中的序列个数为N（batch_size），定义单个序列长度为M（也就是我们的steps）。那么实际上我们每个batch是一个N x M的数组。在这里我们重新定义batch_size为一个N x M的数组，而不是batch中序列的个数。在上图中，当我们设置N=2， M=3时，我们可以得到每个batch的大小为2 x 3 = 6个字符，整个序列可以被分割成12 / 6 = 2个batch。
-
-# In[6]:
 
 def get_batches(arr, n_seqs, n_steps):
     '''
@@ -74,24 +72,11 @@ def get_batches(arr, n_seqs, n_steps):
 
 # 上面的代码定义了一个generator，调用函数会返回一个generator对象，我们可以获取一个batch。
 
-# In[7]:
-
-batches = get_batches(encoded, 10, 50)
-x, y = next(batches)
-
-
-# In[8]:
-
-print('x\n', x[:10, :10])
-print('\ny\n', y[:10, :10])
-
 
 # # 3 模型构建
 # 模型构建部分主要包括了输入层，LSTM层，输出层，loss，optimizer等部分的构建，我们将一块一块来进行实现。
 
 # ## 3.1 输入层
-
-# In[9]:
 
 def build_inputs(num_seqs, num_steps):
     '''
@@ -111,8 +96,6 @@ def build_inputs(num_seqs, num_steps):
 
 # ## 3.2 LSTM层
 
-# In[10]:
-
 def build_lstm(lstm_size, num_layers, batch_size, keep_prob):
     ''' 
     构建lstm层
@@ -121,16 +104,17 @@ def build_lstm(lstm_size, num_layers, batch_size, keep_prob):
     lstm_size: lstm隐层中结点数目
     num_layers: lstm的隐层数目
     batch_size: batch_size
-
     '''
     # 构建一个基本lstm单元
-    lstm = tf.nn.rnn_cell.BasicLSTMCell(lstm_size)
-    
-    # 添加dropout
-    drop = tf.nn.rnn_cell.DropoutWrapper(lstm, output_keep_prob=keep_prob)
+    lstm_cells = []
+    for i in range(num_layers):
+        lstm = tf.nn.rnn_cell.BasicLSTMCell(lstm_size)       
+        # 添加dropout
+        drop = tf.nn.rnn_cell.DropoutWrapper(lstm, output_keep_prob=keep_prob)
+        lstm_cells.append(drop)
     
     # 堆叠
-    cell = tf.nn.rnn_cell.MultiRNNCell([drop for _ in range(num_layers)])
+    cell = tf.nn.rnn_cell.MultiRNNCell(lstm_cells)
     initial_state = cell.zero_state(batch_size, tf.float32)
     
     return cell, initial_state
@@ -138,7 +122,6 @@ def build_lstm(lstm_size, num_layers, batch_size, keep_prob):
 
 # ## 3.3 输出层
 
-# In[11]:
 
 def build_output(lstm_output, in_size, out_size):
     ''' 
@@ -152,14 +135,13 @@ def build_output(lstm_output, in_size, out_size):
 
     # 将lstm的输出按照列concate，例如[[1,2,3],[7,8,9]],
     # tf.concat的结果是[1,2,3,7,8,9]
-    seq_output = tf.concat(1, lstm_output) # tf.concat(concat_dim, values)
+    seq_output = tf.concat(lstm_output,1) # tf.concat(concat_dim, values)
     # reshape
     x = tf.reshape(seq_output, [-1, in_size])
     
     # 将lstm层与softmax层全连接
-    with tf.variable_scope('softmax'):
-        softmax_w = tf.Variable(tf.truncated_normal([in_size, out_size], stddev=0.1))
-        softmax_b = tf.Variable(tf.zeros(out_size))
+    softmax_w = tf.Variable(tf.truncated_normal([in_size, out_size], stddev=0.1))
+    softmax_b = tf.Variable(tf.zeros(out_size))
     
     # 计算logits
     logits = tf.matmul(x, softmax_w) + softmax_b
@@ -172,7 +154,6 @@ def build_output(lstm_output, in_size, out_size):
 
 # ## 3.4 训练误差计算
 
-# In[12]:
 
 def build_loss(logits, targets, lstm_size, num_classes):
     '''
@@ -199,7 +180,6 @@ def build_loss(logits, targets, lstm_size, num_classes):
 # ## 3.5 Optimizer
 # 我们知道RNN会遇到梯度爆炸（gradients exploding）和梯度弥散（gradients disappearing)的问题。LSTM解决了梯度弥散的问题，但是gradient仍然可能会爆炸，因此我们采用gradient clippling的方式来防止梯度爆炸。即通过设置一个阈值，当gradients超过这个阈值时，就将它重置为阈值大小，这就保证了梯度不会变得很大。
 
-# In[13]:
 
 def build_optimizer(loss, learning_rate, grad_clip):
     ''' 
@@ -221,8 +201,6 @@ def build_optimizer(loss, learning_rate, grad_clip):
 
 # ## 3.6 模型组合
 # 使用tf.nn.dynamic_run来运行RNN序列
-
-# In[14]:
 
 class CharRNN:
     
@@ -271,65 +249,56 @@ class CharRNN:
 # - learning_rate: 学习率
 # - keep_prob: dropout层中保留结点比例
 
-# In[15]:
 
-batch_size = 100         # Sequences per batch
-num_steps = 100          # Number of sequence steps per batch
+batch_size = 50         # Sequences per batch
+num_steps = 14          # Number of sequence steps per batch
 lstm_size = 512         # Size of hidden layers in LSTMs
 num_layers = 2          # Number of LSTM layers
-learning_rate = 0.001    # Learning rate
+learning_rate = 0.002    # Learning rate
 keep_prob = 0.5         # Dropout keep probability
 
 
-# In[16]:
+# epochs = 100
+# # 每n轮进行一次变量保存
+# save_every_n = 200
 
-epochs = 20
-# 每n轮进行一次变量保存
-save_every_n = 200
+# model = CharRNN(len(vocab), batch_size=batch_size, num_steps=num_steps,
+#                 lstm_size=lstm_size, num_layers=num_layers, 
+#                 learning_rate=learning_rate)
 
-model = CharRNN(len(vocab), batch_size=batch_size, num_steps=num_steps,
-                lstm_size=lstm_size, num_layers=num_layers, 
-                learning_rate=learning_rate)
-
-saver = tf.train.Saver(max_to_keep=100)
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
+# saver = tf.train.Saver(max_to_keep=100)
+# with tf.Session() as sess:
+#     sess.run(tf.global_variables_initializer())
     
-    counter = 0
-    for e in range(epochs):
-        # Train network
-        new_state = sess.run(model.initial_state)
-        loss = 0
-        for x, y in get_batches(encoded, batch_size, num_steps):
-            counter += 1
-            start = time.time()
-            feed = {model.inputs: x,
-                    model.targets: y,
-                    model.keep_prob: keep_prob,
-                    model.initial_state: new_state}
-            batch_loss, new_state, _ = sess.run([model.loss, 
-                                                 model.final_state, 
-                                                 model.optimizer], 
-                                                 feed_dict=feed)
+#     counter = 0
+#     for e in range(epochs):
+#         # Train network
+#         new_state = sess.run(model.initial_state)
+#         loss = 0
+#         for x, y in get_batches(encoded, batch_size, num_steps):
+#             counter += 1
+#             start = time.time()
+#             feed = {model.inputs: x,
+#                     model.targets: y,
+#                     model.keep_prob: keep_prob,
+#                     model.initial_state: new_state}
+#             batch_loss, new_state, _ = sess.run([model.loss, 
+#                                                  model.final_state, 
+#                                                  model.optimizer], 
+#                                                  feed_dict=feed)
             
-            end = time.time()
-            # control the print lines
-            if counter % 100 == 0:
-                print('轮数: {}/{}... '.format(e+1, epochs),
-                      '训练步数: {}... '.format(counter),
-                      '训练误差: {:.4f}... '.format(batch_loss),
-                      '{:.4f} sec/batch'.format((end-start)))
+#             end = time.time()
+#             # control the print lines
+#             if counter % 10 == 0:
+#                 print('轮数: {}/{}... '.format(e+1, epochs),
+#                       '训练步数: {}... '.format(counter),
+#                       '训练误差: {:.4f}... '.format(batch_loss),
+#                       '{:.4f} sec/batch'.format((end-start)))
 
-            if (counter % save_every_n == 0):
-                saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, lstm_size))
+#             if (counter % save_every_n == 0):
+#                 saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, lstm_size))
     
-    saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, lstm_size))
-
-
-# In[17]:
-
-# 查看checkpoints
-tf.train.get_checkpoint_state('checkpoints')
+#     saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, lstm_size))
 
 
 # # 5 文本生成
@@ -337,7 +306,6 @@ tf.train.get_checkpoint_state('checkpoints')
 # 
 # 为了减少噪音，每次的预测值我会选择最可能的前5个进行随机选择，比如输入h，预测结果概率最大的前五个为[o,e,i,u,b]，我们将随机从这五个中挑选一个作为新的字符，让过程加入随机因素会减少一些噪音的生成。
 
-# In[18]:
 
 def pick_top_n(preds, vocab_size, top_n=5):
     """
@@ -355,9 +323,6 @@ def pick_top_n(preds, vocab_size, top_n=5):
     # 随机选取一个字符
     c = np.random.choice(vocab_size, 1, p=p)[0]
     return c
-
-
-# In[19]:
 
 def sample(checkpoint, n_samples, lstm_size, vocab_size, prime="The "):
     """
@@ -409,35 +374,23 @@ def sample(checkpoint, n_samples, lstm_size, vocab_size, prime="The "):
 
 # Here, pass in the path to a checkpoint and sample from the network.
 
-# In[20]:
-
-tf.train.latest_checkpoint('checkpoints')
-
-
-# In[26]:
-
 # 选用最终的训练参数作为输入进行文本生成
-checkpoint = tf.train.latest_checkpoint('checkpoints')
-samp = sample(checkpoint, 2000, lstm_size, len(vocab), prime="The")
+checkpoint = tf.train.latest_checkpoint('D://GitProject/project/TensorFlow/checkpoints/')
+prime1 = "人"
+prime2 = "红"
+samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime1)
 print(samp)
-
-
-# In[22]:
-
-checkpoint = 'checkpoints/i200_l512.ckpt'
-samp = sample(checkpoint, 1000, lstm_size, len(vocab), prime="Far")
+samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime2)
 print(samp)
-
-
-# In[23]:
-
-checkpoint = 'checkpoints/i1000_l512.ckpt'
-samp = sample(checkpoint, 1000, lstm_size, len(vocab), prime="Far")
-print(samp)
-
-
-# In[24]:
-
-checkpoint = 'checkpoints/i2000_l512.ckpt'
-samp = sample(checkpoint, 1000, lstm_size, len(vocab), prime="Far")
-print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime1)
+# print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime2)
+# print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime1)
+# print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime2)
+# print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime1)
+# print(samp)
+# samp = sample(checkpoint, 56, lstm_size, len(vocab), prime=prime2)
+# print(samp)
