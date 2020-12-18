@@ -25,6 +25,8 @@ import tensorflow as tf
 vocab = codecs.open('C:\\Users\\jj84\\Desktop\\李白test.txt',
                     encoding='utf-8').read()
 vocab_to_int = {c: i for i, c in enumerate(vocab)}
+
+print(len(vocab))
 int_to_vocab = dict(enumerate(vocab))
 encoded = np.array([vocab_to_int[c] for c in vocab], dtype=np.int32)
 

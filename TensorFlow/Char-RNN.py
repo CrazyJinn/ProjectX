@@ -36,10 +36,11 @@ def GetBatch(arr, nSeqs, nSteps):
 
     arr = arr[:batchSize * nBatch]
     arr = arr.reshape((nSeqs, -1))
+    print(arr.shape[1])
     for i in range(0, arr.shape[1], nSteps):
         x = arr[:, i:i + nSteps]
         y = np.zeros_like(x)
-        # y[:, :-1], y[:, -1] = x[:, 1:], x[:, 0] #??
+        y[:, :-1], y[:, -1] = x[:, 1:], x[:, 0]
         yield x, y
 
 
