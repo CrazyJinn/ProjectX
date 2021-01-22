@@ -1,56 +1,29 @@
-import csv
+import pandas as pd
 import numpy as np
 
 
-def LoadCpuData(path):
-    with open(path, 'r') as f:
-        data = csv.reader(f)
-        podDic = dict()
-        tempValue = 0.0
-        for row in data:
-            if(row[3] == 'http'):
-                if(podDic.__contains__(row[7])):
-                    podDic[row[7]].append(round(float(row[2]) - tempValue, 2))
-                else:
-                    podDic[row[7]] = []
-                tempValue = float(row[2])
-        return podDic
+def GetPodName():
+    df = pd.read_csv('./last7days/process_cpu_seconds_total.csv')
+    df = df.loc[:,['pod']].drop_duplicates()
+    return df
+
+def FormatCpuData():
+    df = pd.read_csv('./last7days/process_cpu_seconds_total.csv')
+    df = df.loc[df['endpoint'] == 'http']
+    table = pd.pivot_table(df, values='value', index=['pod', 'timestamp'])
+    return table
 
 
-def LoadRequestTotal(path):
-    with open(path, 'r') as f:
-        data = csv.reader(f)
-        podDic = dict()
-        tempValue = 0
-        for row in data:
-            if(podDic.__contains__(row[11])):
-                if(row[4] == "200"):
-                    key = row[5] + "_" + row[3] + "_" + row[4]
-                    if(podDic[row[11]].__contains__(key)):
-                        podDic[row[11]][key].append(round(float(row[2]) - tempValue, 2))
-                    else:
-                        podDic[row[11]][key] = []
-                    tempValue = float(row[2])
-            else:
-                podDic[row[11]] = dict()
-        return podDic
+def FormatRequestTotal():
+    df = pd.read_csv('./last7days/http_requests_received_total.csv')
+    df = df.loc[df['endpoint'] == 'http']
+    table = pd.pivot_table(df, values='value', index=[
+        'pod', 'timestamp', 'code'], aggfunc=np.sum)
+    return table
 
 
-def fvk():
-    cpuData = LoadCpuData('./last7days/process_cpu_seconds_total.csv')
-    reqsData = LoadRequestTotal('./last7days/http_requests_received_total.csv')
-    result = []
-    for podName in reqsData.keys():
-        if reqsData[podName].__contains__('__200'):
-            del reqsData[podName]['__200']  # 去掉faq的请求
-        maxLen = len(cpuData[podName])
+def FormatRequest200Total():
+    return FormatRequestTotal().query('code == [200]')
 
-        tempArr = np.zeros(maxLen)
-        for key in reqsData[podName].keys():
-            loss = maxLen - len(reqsData[podName][key])
-            if loss > 0:
-                for _ in range(loss):
-                    reqsData[podName][key].append(0.0)
-            tempArr = np.sum([tempArr, np.array(reqsData[podName][key])], axis=0)
-        result.append(tempArr / np.array(cpuData[podName]))
-    return result
+def FormatRequestErrorTotal():
+    return FormatRequestTotal().query('code != [200]')

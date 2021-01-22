@@ -17,15 +17,15 @@ start = (end - TIME_SPAN_DAYS * 24 * 60 * 60)
 STEP = 600  # default duration is 14/h
 
 nameSpace = 'ec-business-ssl'
-serviceName = 'prod-ssl-realtime-v4'
+serviceName = 'prod-ssl-minicart-v2'
 metricsNames = [
     'http_requests_received_total',
-    #   'process_open_handles',
-    #   'process_num_threads',
-    #   'http_request_duration_seconds_count',
-    #   'http_requests_in_progress',
-    #   'dotnet_collection_count_total',
-    # 'http_request_duration_seconds_sum',
+    'process_open_handles',
+    'process_num_threads',
+    'http_request_duration_seconds_count',
+    'http_requests_in_progress',
+    'dotnet_collection_count_total',
+    'http_request_duration_seconds_sum',
     'process_cpu_seconds_total'
 ]
 

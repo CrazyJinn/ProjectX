@@ -1,25 +1,67 @@
-import pandas as pd
+import matplotlib.pyplot as plt
+import FormatData
+import tensorflow as tf
 import numpy as np
 
-df1 = pd.read_csv('./last7days/process_cpu_seconds_total.csv')
+cpuSeries = FormatData.FormatCpuData()
+requestTotle = FormatData.FormatRequest200Total()
 
-df1 = df1.loc[df1['endpoint'] == 'http']
-
-prodNameList = pd.pivot_table(df1, values='value', index=['pod']).index
-table = pd.pivot_table(df1, values='value', index=['pod', 'timestamp'])
-
-for prodName in prodNameList:
-    print(prodName)
-    print(table.loc[prodName].diff())
+# podNameList = FormatData.GetPodName()
 
 
-df2 = pd.read_csv('./last7days/http_requests_received_total.csv')
+goodPodNameList = ["prod-ssl-cookie-v1-7b4d5fbbdb-jzlfd", "prod-ssl-cookie-v1-7b4d5fbbdb-rddgj", "prod-ssl-cookie-v1-7b4d5fbbdb-hphv9", "prod-ssl-cookie-v1-7b4d5fbbdb-qnrjb",
+                   "prod-ssl-cookie-v1-7b4d5fbbdb-r2fcc"]
 
-df1 = df1.loc[df1['endpoint'] == 'http']
+x = []
+y = []
+origin = []
 
-prodNameList = pd.pivot_table(df1, values='value', index=['pod']).index
-table = pd.pivot_table(df1, values='value', index=['pod', 'timestamp'])
+for podName in goodPodNameList:
+    cpu = cpuSeries.loc[podName].diff().iloc[1:]
+    request = requestTotle.loc[podName].diff().iloc[1:]
+    reqPerCpu = request.values / cpu.values
 
-for prodName in prodNameList:
-    print(prodName)
-    print(table.loc[prodName].diff())
+    origin.append(reqPerCpu)
+    x.append(reqPerCpu[0:1000])
+    y.append(reqPerCpu[1000:])
+
+x_train = np.asarray(x).reshape(len(goodPodNameList), 1000, 1)
+y_train = np.asarray(y).reshape(len(goodPodNameList), 8)
+
+print(y_train)
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.SimpleRNN(20, return_sequences=True, input_shape=[None, 1]),
+    tf.keras.layers.SimpleRNN(20),
+    tf.keras.layers.Dense(8)
+])
+
+# model = tf.keras.models.Sequential([
+#     tf.keras.layers.LSTM(8, return_sequences=True, input_shape=[None, 1]),
+#     tf.keras.layers.LSTM(8),
+#     tf.keras.layers.Dense(8)
+# ])
+
+optimizer = tf.keras.optimizers.Adam(lr=0.02)
+model.compile(optimizer=optimizer, loss='mae')
+
+EPOCHS = 1000
+
+model.fit(x=x_train, y=y_train, epochs=EPOCHS)
+
+print(model.predict(x_train))
+
+cpuTest = cpuSeries.loc['prod-ssl-cookie-v1-7b4d5fbbdb-jzlfd'].diff().iloc[1:]
+requestTest = requestTotle.loc['prod-ssl-cookie-v1-7b4d5fbbdb-jzlfd'].diff().iloc[1:]
+reqPerCpuTest = requestTest.values / cpuTest.values
+
+x_test = reqPerCpuTest[:1000]
+x_test = x_test.reshape(1, 1000, 1)
+
+plt.figure()
+
+for fvk in origin:
+    plt.plot(range(108), fvk[-108:])
+
+plt.plot(range(100, 108), model.predict(x_test)[0], c='red', marker='x')
+plt.show()
