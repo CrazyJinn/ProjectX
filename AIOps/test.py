@@ -1,57 +1,22 @@
-import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
-
-x_train = []
-y_train = []
-for i in range(200):
-    time = i * np.pi / 2
-    x_train.append(np.cos(i * np.pi / 2))
-    y_train.append(np.cos(i * np.pi / 2))
-
-x = np.array(x_train[:100]).reshape(1, 100, 1)
-y = np.array(y_train[100:108]).reshape(1, 8)
-
-# print(x)
-# print(y)
-
-# x = np.array(x_train)
-# y = np.array(y_train)
+import FormatData
+import numpy as np
 
 
-# model = tf.keras.models.Sequential([
-#     tf.keras.layers.Flatten(input_shape=[1, 1]),
-#     tf.keras.layers.Dense(8)
-# ])
+cpuSeries = FormatData.FormatCpuData()
+podNameList = FormatData.GetPodName()
 
-# model = tf.keras.models.Sequential([
-#     tf.keras.layers.SimpleRNN(8, return_sequences=True, input_shape=[None, 1]),
-#     tf.keras.layers.SimpleRNN(8),
-#     tf.keras.layers.Dense(8)
-# ])
+aaa = cpuSeries.loc['prod-ssl-cookie-v1-7b4d5fbbdb-r2fcc']
+x = aaa.index[1:]
+y = aaa.value.diff().iloc[1:]
 
-model = tf.keras.models.Sequential([
-    tf.keras.layers.LSTM(8, return_sequences=True, input_shape=[None, 1]),
-    tf.keras.layers.LSTM(8),
-    tf.keras.layers.Dense(8)
-])
-
-model.compile(optimizer='adam', loss='mae')
-
-
-EPOCHS = 1000
-
-model.fit(x=x, y=y, epochs=EPOCHS)
-
-print(model.predict(x))
+goodPodNameList = ["prod-ssl-cookie-v1-7b4d5fbbdb-jzlfd", "prod-ssl-cookie-v1-7b4d5fbbdb-rddgj", "prod-ssl-cookie-v1-7b4d5fbbdb-hphv9", "prod-ssl-cookie-v1-7b4d5fbbdb-qnrjb",
+                   "prod-ssl-cookie-v1-7b4d5fbbdb-r2fcc"]
 
 plt.figure()
-
-plt.plot(range(100), x_train[:100])
-
-for i in range(8):
-    plt.scatter(100 + i, model.predict(x)[0][i], c='red', marker='x')
-
-# plt.scatter(100, model.predict(x)[0], c='red', marker='x')
-
+for podName in goodPodNameList:
+    cpu = cpuSeries.loc[podName].diff().iloc[1:]
+    if podName == 'prod-ssl-cookie-v1-7b4d5fbbdb-r2fcc':
+        plt.plot(x, cpu)
+plt.plot(x, y, marker='x')
 plt.show()
