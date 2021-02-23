@@ -2,56 +2,69 @@ import matplotlib.pyplot as plt
 import FormatData
 import tensorflow as tf
 import numpy as np
+import time
 
 cpuSeries = FormatData.FormatCpuData()
 
-goodPodNameList = ["prod-ssl-cookie-v1-7b4d5fbbdb-jzlfd", "prod-ssl-cookie-v1-7b4d5fbbdb-rddgj", "prod-ssl-cookie-v1-7b4d5fbbdb-hphv9", "prod-ssl-cookie-v1-7b4d5fbbdb-qnrjb",
-                   "prod-ssl-cookie-v1-7b4d5fbbdb-r2fcc"]
+podNameList = FormatData.GetPodName()
 
 x = []
 y = []
-origin = []
+for podName in podNameList.values:
+    cpu = cpuSeries.loc[podName].diff().iloc[1:]
+    hourSeries = []
+    for i in cpu.index:
+        hourSeries.append(time.localtime(i).tm_hour)
+    x.append(cpu.values)
+    y.append(hourSeries)
 
-for podName in goodPodNameList:
-    cpu = np.asarray(cpuSeries.loc[podName].diff().iloc[1:])
-    origin.append(cpu)
-    x.append(cpu[0:864])
-    y.append(cpu[864:])
+a = np.array(x).reshape(5, 1440)
+b = np.array(y).reshape(5, 1440)
 
-x_train = np.asarray(x).reshape(len(goodPodNameList), 864, 1)
-y_train = np.asarray(y).reshape(len(goodPodNameList), 144)
+npArr = np.dstack((a, b))
 
-print(y_train)
+
+def GetBatch(step):
+    index1 = 144 * step
+    index2 = 144 * (step+1)
+    x = npArr[:, index1:index2-6]
+    y = a[:, index2-6: index2]
+    return x, y
+
+
+xx, yy = GetBatch(0)
+print(xx.shape)
+print(yy)
 
 # model = tf.keras.models.Sequential([
 #     tf.keras.layers.SimpleRNN(20, return_sequences=True, input_shape=[None, 1]),
 #     tf.keras.layers.SimpleRNN(20),
-#     tf.keras.layers.Dense(8)
+#     tf.keras.layers.Dense(144)
 # ])
-
 model = tf.keras.models.Sequential([
-    tf.keras.layers.LSTM(20, return_sequences=True, input_shape=[None, 1]),
-    tf.keras.layers.LSTM(20),
-    tf.keras.layers.Dense(144)
+    tf.keras.layers.LSTM(138, return_sequences=True, input_shape=[None, 2]),
+    tf.keras.layers.LSTM(138),
+    tf.keras.layers.Dense(6)
 ])
 
+# optimizer = tf.keras.optimizers.Adam(lr=0.02)
 model.compile(optimizer='adam', loss='mae')
 
-EPOCHS = 1000
+for step in range(5000):
+    print("Step:-----------  :", step)
+    x_train, y_train = GetBatch(step % 8)
+    model.fit(x=x_train, y=y_train, epochs=1, batch_size=138)
 
-model.fit(x=x_train, y=y_train, epochs=EPOCHS, batch_size=144)
 
-# print(model.predict(x_train))
+model.save("model")
 
-cpuTest = np.asarray(cpuSeries.loc['prod-ssl-cookie-v1-7b4d5fbbdb-r84hb'].diff().iloc[1:])
 
-x_test = cpuTest[-144:]
-x_test = np.asarray(x_test).reshape(1, 144, 1)
+cpuTest = np.asarray(cpuSeries.loc['prod-ssl-cart-v3-58676fbc6-7qjl9'].diff().iloc[1:])
+x_test = cpuTest[-144:-6]
+x_test = np.asarray(x_test).reshape(1, 138, 1)
 
 plt.figure()
-
-# for fvk in origin:
-#     plt.plot(range(144), fvk[-144:], c='blue')
-plt.plot(range(144), cpuTest[-144:], c='blue')
-plt.plot(range(144), model.predict(x_test)[0], c='red', marker='x')
+for fvk in origin:
+    plt.plot(range(144), fvk[-144:], c='blue')
+plt.plot(range(138, 144), model.predict(x_test)[0], c='red', marker='x')
 plt.show()

@@ -4,8 +4,9 @@ import numpy as np
 
 def GetPodName():
     df = pd.read_csv('./last7days/process_cpu_seconds_total.csv')
-    df = df.loc[:,['pod']].drop_duplicates()
-    return df
+    df = df.loc[:, ['pod']].drop_duplicates()
+    return df.pod
+
 
 def FormatCpuData():
     df = pd.read_csv('./last7days/process_cpu_seconds_total.csv')
@@ -24,6 +25,7 @@ def FormatRequestTotal():
 
 def FormatRequest200Total():
     return FormatRequestTotal().query('code == [200]')
+
 
 def FormatRequestErrorTotal():
     return FormatRequestTotal().query('code != [200]')

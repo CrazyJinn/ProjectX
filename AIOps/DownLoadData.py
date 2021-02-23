@@ -8,16 +8,16 @@ import os
 A simple program to print the result of a Prometheus query as CSV.
 """
 
-DATA_SOURCE = "https://e11k8s-prometheus.newegg.org"
+DATA_SOURCE = "https://e4k8s-prometheus.newegg.org"
 
 # https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
 end = int((time.time()) * 1000) / 1000
-TIME_SPAN_DAYS = 7
+TIME_SPAN_DAYS = 10
 start = (end - TIME_SPAN_DAYS * 24 * 60 * 60)
-STEP = 600  # default duration is 14/h
+STEP = 600  # 单位s
 
 nameSpace = 'ec-business-ssl'
-serviceName = 'prod-ssl-minicart-v2'
+serviceName = 'prod-ssl-cart-v3'
 metricsNames = [
     'http_requests_received_total',
     'process_open_handles',
