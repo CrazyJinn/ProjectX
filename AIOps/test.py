@@ -1,76 +1,82 @@
 import matplotlib.pyplot as plt
-import FormatData
+import GetData as gd
 import numpy as np
 from sklearn.cluster import DBSCAN
-# import tensorflow as tf
 
-cpuSeries = FormatData.FormatCpuData()
+trainPath = 'D:/GitHub/project/AIOps/train/process_cpu_seconds_total.csv'
+testPath = 'D:/GitHub/project/AIOps/test/process_cpu_seconds_total.csv'
 
-podNameList = FormatData.GetPodName()
-
-
-x = []
-for podName in podNameList.values:
-    cpu = cpuSeries.loc[podName].diff().iloc[1:]
-    xNp = np.array(cpu.values).reshape(len(cpu.values))
-    xRange = np.max(xNp) - np.min(xNp)
-    x.append((xNp - np.min(xNp))/xRange)
+magicNumber = 144
 
 
-def np_move_avg(a, n=10, mode="same"):
-    return(np.convolve(a, np.ones((n,))/n, mode=mode))
+def FormatSeriesData(cpuSeries, podNameList):
+    result = np.array([])
+    valid_count = 0
+    for podName in podNameList:
+        cpu = cpuSeries.loc[podName].diff().iloc[1:]
+        npArr = np.array(cpu.values).reshape(len(cpu.values))
+        for i in range(int(len(npArr) / magicNumber)):
+            result = np.append(result, npArr[magicNumber*i: magicNumber*(i+1)])
+            valid_count = valid_count+1
+    return result.reshape(valid_count, -1, magicNumber)
 
 
-def SBD(a, v):
+def SBD(v):
+    a = np.ones(magicNumber)  # 暂时全和1比较
     correlate = np.correlate(a, v, mode='full')
     norm1 = np.linalg.norm(a)
     norm2 = np.linalg.norm(v)
     return 1 - np.max(correlate / (norm1 * norm2))
 
 
-sbdValue = []
-line = []
-reshapeX = np.array(x).reshape(5, 10, 144)
-baseLine = np.ones(144)
-for i in reshapeX:
-    for j in i:
-        sbdValue.append(SBD(baseLine, j))
-        line.append(j)
-
-clustering = DBSCAN(eps=0.015, min_samples=2).fit(np.array(sbdValue).reshape(-1, 1))
-
-
-def FindCentroid(labels, SBD):
-    result = np.dstack((labels, SBD))[0]
-    result = result[np.argsort(result[:, 0])]
-    # print(np.unique(result[:, 0], return_index=True)[1][1:])
+def FindCentroid(labels, sbdValue):
+    result = np.dstack((labels, sbdValue))[0]
+    result = result[np.where(result[:, 0] >= 0)]  # 排除未分类的点(-1为分类失败)
+    result = result[np.argsort(result[:, 0])]  # 按照聚类排序
     result = np.split(result[:, 1], np.unique(result[:, 0], return_index=True)[1][1:])
     fvk = []
-    for temp in result[1:]:
+    for temp in result:
         fvk.append(np.mean(temp, axis=0))
     return fvk
 
 
-result = FindCentroid(clustering.labels_, sbdValue)
+train_cpuSeries = gd.GetCpuData(trainPath)
+train_podNameList = gd.GetPodName(trainPath)
+train_data = FormatSeriesData(train_cpuSeries, train_podNameList)
 
-print(result)
+sbdValue = np.array([])
+# line = []
+for i in train_data:
+    for j in i:
+        sbdValue = np.append(sbdValue, SBD(j))
+        # line.append(j)
+
+clustering = DBSCAN(eps=0.010, min_samples=2).fit(sbdValue.reshape(-1, 1))
 
 
-# plt.figure()
+centroid = FindCentroid(clustering.labels_, sbdValue)
+print(centroid)
 
 
-# plt.plot(range(144), line[30], c="red")
-# plt.plot(range(144), line[41], c="red")
+test_cpuSeries = gd.GetCpuData(testPath)
+test_podNameList = gd.GetPodName(testPath)
+test_data = FormatSeriesData(test_cpuSeries, test_podNameList)
+error_dataArr = []
+for i in test_data:
+    for j in i:
+        print(SBD(j))
+        if SBD(j) - centroid > 0.10:
+            error_dataArr.append(j)
 
-# plt.plot(range(144), line[45], c="blue")
-# plt.plot(range(144), line[2], c="blue")
+# print(error_dataArr)
 
-# plt.plot(range(144), line[43], c="green")
-# plt.plot(range(144), line[3], c="green")
 
-# # for i in range(50):
-# #     if result[i][0] == -1:
-# #         print(result[i][2])
-# #         plt.plot(range(144), line[int(result[i][2])])
+plt.figure()
 
-# plt.show()
+
+plt.plot(range(len(error_dataArr[0])), error_dataArr[0], "blue")
+
+plt.plot(range(144), train_data[0][0], c="red")
+plt.plot(range(144), test_data[0][0], c="green")
+
+plt.show()
