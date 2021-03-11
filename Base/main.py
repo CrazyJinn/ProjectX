@@ -1,56 +1,23 @@
-import numpy as np
-import matplotlib.pyplot as plt
+# pip3 install neo4j-driver
+# python3 example.py
 
+from neo4j import GraphDatabase, basic_auth
 
-x = [4, 4, 4, 2, 2, 6, 2, 4, 4,
-     12, 2, 2, 6, 2, 4, 4,
-     12, 4, 6, 2, 4, 4,
-     8, 2, 2, 2, 2, 6, 2, 4, 4,
-     8, 4, 2, 2, 6, 2, 4, 4,
-     12, 2, 2, 6, 2, 4, 4,
-     12, 2, 2, 4, 2, 4, 6,
-     2, 2, 2, 10, 2, 2, 2, 2, 4, 4,
-     12, 2, 2, 6, 2, 4, 4,
-     12, 2, 2, 6, 2, 4, 4,
-     16, 2, 2, 4, 4, 2, 2,
-     6, 2, 8, 4, 4, 4, 4,
-     12, 4, 8, 4, 4,
-     2, 2, 8, 2, 2, 4, 2, 2, 4, 4,
-     12, 4, 8, 8,
-     2, 2, 8, 2, 2, 4, 2, 6, 4,
-     12, 4]
+driver = GraphDatabase.driver(
+  "bolt://3.237.67.131:7687",
+  auth=basic_auth("neo4j", "hydraulics-operability-division"))
 
-y = [0, 0, 0, 6, 7, 8, 7, 8, 10,
-     7, 3, 3, 6, 5, 6, 8,
-     5, 3, 4, 3, 4, 8,
-     3, 0, 8, 8, 8, 7, 4, 4, 7,
-     7, 0, 6, 7, 8, 7, 8, 10,
-     7, 3, 3, 6, 5, 6, 8,
-     5, 2, 3, 4, 8, 7, 8,
-     9, 9, 10, 8, 8, 7, 6, 6, 7, 5,
-     6, 8, 9, 10, 9, 10, 12,
-     9, 5, 5, 8, 7, 8, 10,
-     10, 6, 7, 8, 7, 9, 9,
-     8, 5, 5, 11, 10, 9, 8,
-     10, 10, 13, 12, 12,
-     10, 9, 8, 0, 8, 9, 8, 9, 9, 12,
-     10, 10, 13, 12,
-     10, 9, 8, 0, 8, 9, 8, 9, 7,
-     6, 0]
+cypher_query = '''
+MATCH (p:Person {healthstatus:$status})-[v:VISITS]->(pl:Place) 
+WHERE p.confirmedtime < v.starttime 
+RETURN distinct pl.name as place LIMIT 20
+'''
 
-x_convert = []
-x_count = -4
+with driver.session(database="neo4j") as session:
+  results = session.read_transaction(
+    lambda tx: tx.run(cypher_query,
+                      status="Sick").data())
+  for record in results:
+    print(record['place'])
 
-
-for temp in x:
-    x_count += temp
-    x_convert.append(x_count)
-
-
-plt.axis([0.0, 530, -1, 16])
-
-plt.xlabel("x")
-plt.ylabel("y")
-plt.plot(x_convert, y, 'ro', label='Fitted line')
-plt.plot(x_convert, y, label='Fitted line')
-plt.pause(100)
+driver.close()

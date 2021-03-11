@@ -22,9 +22,9 @@ def GetRequestTotal(path):
     return table
 
 
-def GetRequest200Total():
-    return GetRequestTotal().query('code == [200]')
+def GetRequest200Total(path):
+    return GetRequestTotal(path).query('code == [200]')
 
 
-def GetRequestErrorTotal():
-    return GetRequestTotal().query('code != [200]')
+def GetRequestErrorTotal(path):
+    return GetRequestTotal(path).query('code != [200]')
