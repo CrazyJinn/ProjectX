@@ -1,70 +1,108 @@
 import matplotlib.pyplot as plt
-import FormatData
-import tensorflow as tf
+from numpy.lib.financial import fv
+import GetData as gd
 import numpy as np
-import time
+from sklearn.cluster import DBSCAN
 
-cpuSeries = FormatData.FormatCpuData()
+trainPath = 'D:/GitHub/project/AIOps/train/http_request_duration_seconds_bucket.csv'
 
-podNameList = FormatData.GetPodName()
+magicNumber = 120
 
-x = []
-y = []
-for podName in podNameList.values:
-    cpu = cpuSeries.loc[podName].diff().iloc[1:]
-    hourSeries = []
-    for i in cpu.index:
-        hourSeries.append(time.localtime(i).tm_hour)
-    x.append(cpu.values)
-    y.append(hourSeries)
-
-a = np.array(x).reshape(5, 1440)
-b = np.array(y).reshape(5, 1440)
-
-npArr = np.dstack((a, b))
-
-
-def GetBatch(step):
-    index1 = 144 * step
-    index2 = 144 * (step+1)
-    x = npArr[:, index1:index2-6]
-    y = a[:, index2-6: index2]
-    return x, y
+# def FormatSerieData(serieList, podNameList):
+#     result = np.array([])
+#     valid_count = 0
+#     for podName in podNameList:
+#         serie = serieList.query('pod == [@podName]').diff().iloc[1:]
+#         print("============ podName =============")
+#         print(serie.index)
+#         print("============ serie =============")
+#         print(serie.values)
+#         npArr = np.array(serie.values)
+#         for i in range(int(len(npArr) / magicNumber)):
+#             result = np.append(result, npArr[magicNumber*i: magicNumber*(i+1)])
+#             valid_count = valid_count+1
+#     return result.reshape(valid_count, -1, magicNumber)
 
 
-xx, yy = GetBatch(0)
-print(xx.shape)
-print(yy)
-
-# model = tf.keras.models.Sequential([
-#     tf.keras.layers.SimpleRNN(20, return_sequences=True, input_shape=[None, 1]),
-#     tf.keras.layers.SimpleRNN(20),
-#     tf.keras.layers.Dense(144)
-# ])
-model = tf.keras.models.Sequential([
-    tf.keras.layers.LSTM(138, return_sequences=True, input_shape=[None, 2]),
-    tf.keras.layers.LSTM(138),
-    tf.keras.layers.Dense(6)
-])
-
-# optimizer = tf.keras.optimizers.Adam(lr=0.02)
-model.compile(optimizer='adam', loss='mae')
-
-for step in range(5000):
-    print("Step:-----------  :", step)
-    x_train, y_train = GetBatch(step % 8)
-    model.fit(x=x_train, y=y_train, epochs=1, batch_size=138)
+def FormatSerieData(serieList):
+    result = dict()
+    serieList = serieList.diff(axis=1)
+    for index in serieList.index:
+        df = serieList.query('index == [@index]').dropna(axis=1)
+        for row in range(int(df.shape[1]/magicNumber)):
+            temp = df.iloc[:, magicNumber*row:magicNumber*(row+1)]
+            if (temp.shape[1] == magicNumber):
+                key = str(index) + ":" + str(magicNumber*row) + "-" + str(magicNumber*(row+1))
+                result[key] = np.array(temp.values).reshape(magicNumber)
+    return result
 
 
-model.save("model")
+def SBD(v):
+    a = np.ones(magicNumber)  # 暂时全和1比较
+    correlate = np.correlate(a, v, mode='full')
+    norm1 = np.linalg.norm(a)
+    norm2 = np.linalg.norm(v)
+    return 1 - np.max(correlate / (norm1 * norm2))
 
 
-cpuTest = np.asarray(cpuSeries.loc['prod-ssl-cart-v3-58676fbc6-7qjl9'].diff().iloc[1:])
-x_test = cpuTest[-144:-6]
-x_test = np.asarray(x_test).reshape(1, 138, 1)
+def FindCentroid(labels, sbdValue):
+    result = np.dstack((labels, sbdValue))[0]
+    print("============ train data =============")
+    print(result)
+    print("============ ========== =============")
+    result = result[np.where(result[:, 0] >= 0)]  # 排除未分类的点(-1为分类失败)
+    result = result[np.argsort(result[:, 0])]  # 按照聚类排序
+    result = np.split(result[:, 1], np.unique(result[:, 0], return_index=True)[1][1:])
+    fvk = []
+    for temp in result:
+        fvk.append(np.mean(temp, axis=0))
+    return fvk
+
+
+train_data = gd.format_P90(trainPath, magicNumber)
+
+# print(train_data)
+
+sbdValue = np.array([])
+# line = []
+for key, value in train_data.items():
+    # print(key)
+    # print(value)
+    # print(SBD(value))
+    sbdValue = np.append(sbdValue, SBD(value))
+
+clustering = DBSCAN(eps=0.005, min_samples=2).fit(sbdValue.reshape(-1, 1))
+
+# print(train_data.keys()))
+# print(train_data.values())
+result = list(zip(clustering.labels_, sbdValue, train_data.keys(), train_data.values()))
+
+result = sorted(result, key=lambda x: (x[0]))  # 根据类型排序
+
+# print(result)
+
 
 plt.figure()
-for fvk in origin:
-    plt.plot(range(144), fvk[-144:], c='blue')
-plt.plot(range(138, 144), model.predict(x_test)[0], c='red', marker='x')
+flag0 = 0
+flag1 = 0
+flag2 = 0
+flag3 = 0
+for temp in result:
+    # if(temp[0] == -1 and temp[1] < 0.1 and flag0 < 4):
+    #     plt.plot(range(magicNumber), temp[3], c="black")
+    #     print(temp[2])
+    #     flag0 += 1
+    if(temp[0] == 0 and flag1 < 10):
+        plt.plot(range(magicNumber), temp[3], c="red")
+        print(temp[2])
+        flag1 += 1
+    if(temp[0] == 1 and flag2 < 10):
+        plt.plot(range(magicNumber), temp[3], c="blue")
+        print(temp[2])
+        flag2 += 1
+    if(temp[0] == 2 and flag3 < 1):
+        plt.plot(range(magicNumber), temp[3], c="orange")
+        print(temp[2])
+        flag3 += 1
+
 plt.show()
