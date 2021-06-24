@@ -3,38 +3,14 @@ from numpy.lib.financial import fv
 import GetData as gd
 import numpy as np
 from sklearn.cluster import DBSCAN
+import pandas as pd
 
-trainPath = 'D:/GitHub/project/AIOps/train/http_request_duration_seconds_bucket.csv'
+# trainPath = 'D:/GitHub/project/AIOps/train/http_request_duration_seconds_bucket.csv'
 
-magicNumber = 120
+trainPath = 'D:/GitHub/project/AIOps/debugData/333.csv'
+train_df = pd.read_csv(trainPath, low_memory=False)
 
-# def FormatSerieData(serieList, podNameList):
-#     result = np.array([])
-#     valid_count = 0
-#     for podName in podNameList:
-#         serie = serieList.query('pod == [@podName]').diff().iloc[1:]
-#         print("============ podName =============")
-#         print(serie.index)
-#         print("============ serie =============")
-#         print(serie.values)
-#         npArr = np.array(serie.values)
-#         for i in range(int(len(npArr) / magicNumber)):
-#             result = np.append(result, npArr[magicNumber*i: magicNumber*(i+1)])
-#             valid_count = valid_count+1
-#     return result.reshape(valid_count, -1, magicNumber)
-
-
-def FormatSerieData(serieList):
-    result = dict()
-    serieList = serieList.diff(axis=1)
-    for index in serieList.index:
-        df = serieList.query('index == [@index]').dropna(axis=1)
-        for row in range(int(df.shape[1]/magicNumber)):
-            temp = df.iloc[:, magicNumber*row:magicNumber*(row+1)]
-            if (temp.shape[1] == magicNumber):
-                key = str(index) + ":" + str(magicNumber*row) + "-" + str(magicNumber*(row+1))
-                result[key] = np.array(temp.values).reshape(magicNumber)
-    return result
+magicNumber = 60
 
 
 def SBD(v):
@@ -47,9 +23,9 @@ def SBD(v):
 
 def FindCentroid(labels, sbdValue):
     result = np.dstack((labels, sbdValue))[0]
-    print("============ train data =============")
-    print(result)
-    print("============ ========== =============")
+    # print("============ train data =============")
+    # print(result)
+    # print("============ ========== =============")
     result = result[np.where(result[:, 0] >= 0)]  # 排除未分类的点(-1为分类失败)
     result = result[np.argsort(result[:, 0])]  # 按照聚类排序
     result = np.split(result[:, 1], np.unique(result[:, 0], return_index=True)[1][1:])
@@ -59,50 +35,54 @@ def FindCentroid(labels, sbdValue):
     return fvk
 
 
-train_data = gd.format_P90(trainPath, magicNumber)
+train_data = gd.get_P90(train_df, magicNumber)
 
-# print(train_data)
+print(train_data)
+
 
 sbdValue = np.array([])
-# line = []
+
 for key, value in train_data.items():
     # print(key)
     # print(value)
     # print(SBD(value))
     sbdValue = np.append(sbdValue, SBD(value))
 
-clustering = DBSCAN(eps=0.005, min_samples=2).fit(sbdValue.reshape(-1, 1))
+clustering = DBSCAN(eps=0.005, min_samples=5).fit(sbdValue.reshape(-1, 1))
 
-# print(train_data.keys()))
-# print(train_data.values())
-result = list(zip(clustering.labels_, sbdValue, train_data.keys(), train_data.values()))
+print(clustering.labels_)
 
-result = sorted(result, key=lambda x: (x[0]))  # 根据类型排序
+centroid = FindCentroid(clustering.labels_,sbdValue)
 
-# print(result)
+print(centroid)
 
+# result = list(zip(clustering.labels_, sbdValue, train_data.keys(), train_data.values()))
 
-plt.figure()
-flag0 = 0
-flag1 = 0
-flag2 = 0
-flag3 = 0
-for temp in result:
-    # if(temp[0] == -1 and temp[1] < 0.1 and flag0 < 4):
-    #     plt.plot(range(magicNumber), temp[3], c="black")
-    #     print(temp[2])
-    #     flag0 += 1
-    if(temp[0] == 0 and flag1 < 10):
-        plt.plot(range(magicNumber), temp[3], c="red")
-        print(temp[2])
-        flag1 += 1
-    if(temp[0] == 1 and flag2 < 10):
-        plt.plot(range(magicNumber), temp[3], c="blue")
-        print(temp[2])
-        flag2 += 1
-    if(temp[0] == 2 and flag3 < 1):
-        plt.plot(range(magicNumber), temp[3], c="orange")
-        print(temp[2])
-        flag3 += 1
+# result = sorted(result, key=lambda x: (x[0]))  # 根据类型排序
 
-plt.show()
+# # print(result)
+
+# plt.figure()
+# flag0 = 0
+# flag1 = 0
+# flag2 = 0
+# flag3 = 0
+# for temp in result:
+#     # if(temp[0] == -1 and temp[1] < 0.1 and flag0 < 4):
+#     #     plt.plot(range(magicNumber), temp[3], c="black")
+#     #     print(temp)
+#     #     flag0 += 1
+#     # if(temp[0] == 0 and flag1 < 10):
+#     #     plt.plot(range(magicNumber), temp[3], c="red")
+#     #     print(temp[2])
+#     #     flag1 += 1
+#     # if(temp[0] == 1 and flag2 < 10):
+#     #     plt.plot(range(magicNumber), temp[3], c="blue")
+#     #     print(temp[2])
+#     #     flag2 += 1
+#     # if(temp[0] == 2 and flag3 < 1):
+#     #     plt.plot(range(magicNumber), temp[3], c="orange")
+#     #     print(temp[2])
+#     #     flag3 += 1
+
+# plt.show()
